@@ -1,0 +1,31 @@
+      *----------------------------------------------------------------*00001294
+      * ABORT AREA                                                      00001295
+      *----------------------------------------------------------------*00001296
+           COPY WSDB2.                                                  00001640
+           COPY WSSQLERR.                                               00001640
+
+       77  ALL-ASTERISKS               PIC X(80) VALUE ALL '*'.         00001300
+       77  ALL-DASH                    PIC X(80) VALUE ALL '-'.         00001300
+
+       01  ABORT-ROUTINE.                                               00001297
+           05  ABORT-PROGRAM           PIC X(08) VALUE 'YDBQLD'.        00001298
+           05  ABORT-PARAGRAPH         PIC X(32).                       00001310
+           05  ABORT-DATABASE          PIC X(15).                       00001320
+           05  ABORT-SQLCODE           PIC Z(08)9-.                     00001340
+           05  ABORT-FILE-STATUS       PIC XX.                          00001340
+           03  ABORT-KEY               PIC X(80).                       00001350
+           03  ABORT-MESSAGE           PIC X(80).                       00001350
+      *---------------------------------------------------------------*
+      * FILE INFORMATION
+      *---------------------------------------------------------------*
+       77  CC-RETURN-CODE            PIC S9(02)      VALUE 0.
+       77  CC-INI-FILE               PIC XX          VALUE SPACES.
+       77  CC-TRN-FILE               PIC XX          VALUE SPACES.
+       77  CC-PARM-FILE              PIC XX          VALUE SPACES.
+       COPY CCFILE.
+
+       01  AC-INI-DISPLAY.
+           05  FILLER            PIC X(20)        VALUE
+               'IN INI RECORDS'.
+           05  FILLER            PIC X(01)        VALUE ':'.
+           05  AC-INI-REC        PIC 9(7)         VALUE ZERO.

@@ -1,0 +1,679 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FMBXXX.
+       AUTHOR. TONY REY.
+       INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+       DATE-WRITTEN. 01/13/97.
+       DATE-COMPILED.
+      *================================================================*
+      * PROGRAM NARRATIVE
+      *================================================================*
+      * PRODUCE COPYBOOK DATA AND REPORT.
+      *
+      *================================================================*
+      * MODIFICATION LOG
+      *================================================================*
+      * MM/DD/YY  PROGRAMMER  PROBLEM/RFS NUMBER: DESCRIPTION
+      * --------  ----------  ------------------------------------------
+CH0001* 01/13/97  TONY REY    999999: WRITE PROGRAM.
+      *================================================================*
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-370.
+       OBJECT-COMPUTER.  IBM-370.
+       SPECIAL-NAMES. C01 IS TOP-OF-PAGE.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-FILE            ASSIGN TO UT-S-INFILE
+                                     FILE STATUS IS CC-IN-FILE.
+           SELECT OUT-FILE           ASSIGN TO UT-S-OUTFILE
+                                     FILE STATUS IS CC-OUT-FILE.
+           SELECT PRINT-FILE         ASSIGN TO UT-S-PRINT.
+       DATA DIVISION.
+       FILE SECTION.
+      *---------------------------------------------------------------*
+       FD  IN-FILE
+           RECORDING MODE IS F
+           RECORD CONTAINS 133 CHARACTERS
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+        01  IN-REC.
+            05  IN-REC-01-19-MISC       PIC X(019).
+            05  IN-REC-20-20            PIC X(001).
+            05  IN-REC-COPY-IND         REDEFINES IN-REC-20-20
+                                        PIC X(001).
+            05  IN-REC-21-21-FILL       PIC X(001).
+            05  IN-REC-22-27            PIC X(006).
+            05  IN-REC-SEQ-LEFT         REDEFINES IN-REC-22-27
+                                        PIC X(006).
+            05  IN-REC-28-28            PIC X(001).
+            05  IN-REC-COMMENT-IND      REDEFINES IN-REC-28-28
+                                        PIC X(001).
+            05  IN-REC-29-93            PIC X(065).
+            05  IN-REC-COBOL-CODE       REDEFINES IN-REC-29-93
+                                        PIC X(065).
+            05  IN-REC-94-101           PIC X(008).
+            05  IN-REC-SEQ-RIGHT        REDEFINES IN-REC-94-101
+                                        PIC X(008).
+            05  IN-REC-102-102-FILL     PIC X(001).
+            05  IN-REC-103-133.
+                10  IN-REC-103-111-FILL PIC X(009).
+                10  IN-REC-112-115      PIC X(004).
+                10  IN-REC-FROM         REDEFINES IN-REC-112-115
+                                        PIC X(004).
+                10  IN-REC-FROM-N       REDEFINES IN-REC-FROM
+                                        PIC 9(004).
+                10  IN-REC-116-119-FILL PIC X(004).
+                10  IN-REC-120-123      PIC X(004).
+                10  IN-REC-TO           REDEFINES IN-REC-120-123
+                                        PIC X(004).
+                10  IN-REC-TO-N         REDEFINES IN-REC-TO
+                                        PIC 9(004).
+                10  IN-REC-124-127-FILL PIC X(004).
+                10  IN-REC-128-131      PIC X(004).
+                10  IN-REC-LEN          REDEFINES IN-REC-128-131
+                                        PIC X(004).
+                10  IN-REC-LEN-N        REDEFINES IN-REC-LEN
+                                        PIC 9(004).
+                10  IN-REC-132-132-FILL PIC X(001).
+                10  IN-REC-133-133      PIC X(001).
+                10  IN-REC-REDEFINE-IND REDEFINES IN-REC-133-133
+                                        PIC X(001).
+      *---------------------------------------------------------------*
+       FD  OUT-FILE
+           RECORDING MODE IS F
+           RECORD CONTAINS 124 CHARACTERS
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  OUT-REC.
+           05 OUT-COPYBOOK       PIC X(08).
+           05 FILLER             PIC X(01).
+           05 OUT-SEQ            PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 OUT-FIELD-NAME     PIC X(30).
+           05 FILLER             PIC X(01).
+           05 OUT-PICTURE        PIC X(30).
+           05 FILLER             PIC X(01).
+           05 OUT-DATA-TYPE      PIC X(20).
+           05 FILLER             PIC X(01).
+           05 OUT-OCCURS         PIC 9(10).
+           05 FILLER             PIC X(01).
+           05 OUT-FROM           PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 OUT-TO             PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 OUT-LEN            PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 OUT-REDEFINES-IND  PIC X(01).
+      *---------------------------------------------------------------*
+       FD  PRINT-FILE
+           RECORDING MODE IS F
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  PRINT-REC             PIC X(133).
+       EJECT
+      *===============================================================*
+       WORKING-STORAGE SECTION.
+      *===============================================================*
+       77  FILLER                    PIC X(40)
+           VALUE '*** FMBXXX WORKING STORAGE ***'.
+      *---------------------------------------------------------------*
+       77  CC-RETURN-CODE            PIC S9(02)      VALUE 0.
+       77  CC-IN-FILE                PIC XX          VALUE SPACES.
+       77  CC-OUT-FILE               PIC XX          VALUE SPACES.
+       COPY CCFILE.
+      *---------------------------------------------------------------*
+       77  WS-COPYBOOK               PIC X(08)       VALUE '????????'.
+
+       01  WS-N                      PIC 9(05)V9(08) VALUE 0.
+       01  WS-N-R                    REDEFINES WS-N.
+           05  WS-N-INTEGER          PIC 9(05).
+           05  WS-N-FRACTION         PIC 9(08).
+
+       77  WS-IDX                    PIC 9(06)       VALUE 0.
+       77  WS-IDX2                   PIC 9(06)       VALUE 0.
+       77  WS-IDX3                   PIC 9(06)       VALUE 0.
+      *---------------------------------------------------------------*
+       77  CSN-TOK-TBL-SIZE-MAX      PIC 9(02)      VALUE 10.
+       77  CSN-TOK-SIZE-MAX          PIC 9(03)      VALUE 30.
+
+       01  WS-TOK-AREA.
+
+           05  WS-TOK-TBL-IDX        PIC 9(03).
+           05  WS-TOK-TBL-SIZE       PIC 9(03).
+           05  WS-TOK-CHAR-IDX       PIC 9(02).
+
+           05  WS-TOK-TBL            OCCURS 10 TIMES.
+               10  WS-TOK            PIC X(30).
+
+      ***  NOTE, SPACE 88 LEVEL SWITCHES ARE INITIAL DEFAULTS ***
+           05  WS-TOK-FLAG-AREA      PIC X.
+               88 WS-TOK-FLAG-INIT-COMPLETE         VALUE ' '.
+               88 WS-TOK-FLAG-MOVE                  VALUE '1'.
+           05  WS-STMT-FLAG-AREA     PIC X.
+               88 WS-STMT-FLAG-THIS                 VALUE ' '.
+               88 WS-STMT-FLAG-NEXT                 VALUE '1'.
+           05  WS-QUOTES-FLAG-AREA   PIC X.
+               88 WS-QUOTES-FLAG-OFF                VALUE ' '.
+               88 WS-QUOTES-FLAG-ON                 VALUE '1'.
+      *---------------------------------------------------------------*
+      * QUOTE = HEX 7D OR DEC 125.  S94 COMP DEFINES A BINARY 2 BYTE
+      * FIELD.  BYTE 1 CONTAINS "0000 0000", AND BYTE 2 CONTAINS
+      * "0111 1101" (OR HEX 7D OR DEC 125).
+      *---------------------------------------------------------------*
+       01  CSA-QUOTE--BRUTE-FORCE.
+           05 CSN-125            PIC S9(4) COMP   VALUE +125.
+           05 CSN-125-R          REDEFINES CSN-125.
+              10 FILLER          PIC X.
+              10 CSA-QUOTE       PIC X.
+      *---------------------------------------------------------------*
+      * THE LAYOUT BELOW MUST MATCH OUT-REC'S LAYOUT.
+      *---------------------------------------------------------------*
+       01  RH-REC.
+           05 RH-COPYBOOK        PIC X(08).
+           05 FILLER             PIC X(01).
+           05 RH-SEQ             PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 RH-FIELD-NAME      PIC X(30).
+           05 FILLER             PIC X(01).
+           05 RH-PICTURE         PIC X(30).
+           05 FILLER             PIC X(01).
+           05 RH-DATA-TYPE       PIC X(20).
+           05 FILLER             PIC X(01).
+           05 RH-OCCURS          PIC 9(10).
+           05 FILLER             PIC X(01).
+           05 RH-FROM            PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 RH-TO              PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 RH-LEN             PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 RH-REDEFINES-IND   PIC X(01).
+      *---------------------------------------------------------------*
+       01  AC-SEQ                PIC 9(04)        VALUE ZERO.
+
+       01  AC-RECORDS.
+           05  FILLER            PIC X(34)        VALUE
+               'INFILE RECORDS (USED / BYPASSED): '.
+           05  AC-IN-REC         PIC 9(7)         VALUE ZERO.
+           05  FILLER            PIC X(03)        VALUE ' / '.
+           05  AC-IN-REC-SKIP    PIC 9(7)         VALUE ZERO.
+           05  FILLER            PIC X(02)        VALUE SPACES.
+           05  FILLER            PIC X(20)        VALUE
+               'OUTFILE RECORDS: '.
+           05  AC-OUT-REC        PIC 9(7)         VALUE ZERO.
+
+       01  WS-DATE-YYMMDD        PIC 9(6).
+       01  WS-DATE-YYMMDD-R      REDEFINES WS-DATE-YYMMDD.
+           05  WS-DATE-YY        PIC 99.
+           05  WS-DATE-MM        PIC 99.
+           05  WS-DATE-DD        PIC 99.
+
+       01  WS-DATE-MM-DD-YY.
+           05  WS-DATE-MM        PIC 99.
+           05  FILLER            PIC X   VALUE '/'.
+           05  WS-DATE-DD        PIC 99.
+           05  FILLER            PIC X   VALUE '/'.
+           05  WS-DATE-YY        PIC 99.
+      *---------------------------------------------------------------*
+      * PRINT WORK
+      *---------------------------------------------------------------*
+       01  AC-LINE               PIC 9(03)   VALUE 99.
+       01  AC-PAGE               PIC 9(03)   VALUE ZERO.
+      ***
+       01  HL1.
+           05  FILLER             PIC X      VALUE SPACES.
+           05  FILLER             PIC X(08)  VALUE 'REPORT: '.
+           05  FILLER             PIC X(49)  VALUE 'FMBXXX-01'.
+           05  FILLER             PIC X(35)
+               VALUE 'WATKINS MOTOR LINES'.
+           05  FILLER             PIC X(28)  VALUE SPACES.
+           05  FILLER             PIC X(05)  VALUE 'PAGE '.
+           05  HL1-PAGE           PIC ZZZ9.
+
+       01  HL2.
+           05  FILLER             PIC X      VALUE SPACES.
+           05  FILLER             PIC X(57)  VALUE SPACES.
+           05  FILLER             PIC X(35)
+               VALUE 'COPYBOOK ANALYSIS REPORT'.
+           05  FILLER             PIC X(28)  VALUE SPACES.
+           05  HL2-DATE           PIC X(08).
+           05  FILLER             PIC X(01)  VALUE SPACES.
+
+       01  HL3.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-COPYBOOK       PIC X(08)  VALUE 'COPYBOOK'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-SEQ            PIC X(04)  VALUE ' SEQ'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-FIELD-NAME     PIC X(30)  VALUE 'FIELD NAME'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-PICTURE        PIC X(30)  VALUE 'PICTURE'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-DATA-TYPE      PIC X(20)  VALUE 'DATA TYPE'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-OCCURS         PIC X(10)  VALUE '   OCCURS'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-FROM           PIC X(04)  VALUE 'FROM'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-TO             PIC X(04)  VALUE '  TO'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-LEN            PIC X(04)  VALUE ' LEN'.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  HL3-REDEFINES-IND  PIC X(01)  VALUE 'R'.
+
+       01  DL1.
+           05  FILLER             PIC X(01)  VALUE SPACES.
+           05  DL1-DATA           PIC X(132) VALUE SPACES.
+      *---------------------------------------------------------------*
+       77  FILLER                    PIC X(40)
+           VALUE '*** FMBXXX WORKING STORAGE END ***'.
+       EJECT
+      *===============================================================*
+       PROCEDURE DIVISION.
+      *===============================================================*
+       MAIN-PROGRAM.
+      ***
+      **** START UP PROCESS ***
+      ***
+           OPEN INPUT  IN-FILE.
+           OPEN OUTPUT OUT-FILE
+                       PRINT-FILE.
+
+           ACCEPT WS-DATE-YYMMDD FROM DATE.
+           MOVE CORR WS-DATE-YYMMDD-R TO WS-DATE-MM-DD-YY.
+           MOVE WS-DATE-MM-DD-YY      TO HL2-DATE.
+
+           PERFORM 050-TOKEN-INIT   THRU 050-EXIT
+           PERFORM 600-READ-IN-FILE THRU 600-EXIT
+      ***
+      **** MAIN PROCESS UNTIL EOF ***
+      ***
+           PERFORM 100-MAIN-PROCESS THRU 100-EXIT
+                   UNTIL CC-IN-FILE = CC-EOF.
+      ***
+      **** FINISH PROGRAM PROCESS ***
+      ***
+       FINISH-PROGRAM.
+
+           MOVE AC-RECORDS TO DL1-DATA.
+           PERFORM 700-PRINT THRU 700-EXIT.
+           CLOSE IN-FILE
+                 OUT-FILE
+                 PRINT-FILE.
+           MOVE CC-RETURN-CODE TO RETURN-CODE.
+           STOP RUN.
+       EJECT
+      *---------------------------------------------------------------*
+      * TOKEN INIT ROUTINE
+      *---------------------------------------------------------------*
+       050-TOKEN-INIT.
+           INITIALIZE WS-TOK-AREA
+                      RH-REC.
+           MOVE 1 TO WS-TOK-TBL-IDX.
+       050-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * MAIN PROCESS
+      *---------------------------------------------------------------*
+       100-MAIN-PROCESS.
+      ***
+      **** TOKEN BUILD ***
+      ***
+           PERFORM VARYING WS-IDX FROM 1 BY 1
+             UNTIL WS-IDX > LENGTH OF IN-REC-COBOL-CODE
+                OR WS-STMT-FLAG-NEXT
+
+               IF  IN-REC-COBOL-CODE(WS-IDX:1) = '.'
+               AND WS-QUOTES-FLAG-OFF
+      ***          END OF COBOL STMT DETECTED ***
+                   SET WS-STMT-FLAG-NEXT TO TRUE
+               END-IF
+
+               IF  NOT WS-TOK-FLAG-INIT-COMPLETE
+               AND IN-REC-COBOL-CODE(WS-IDX:1) = ' '
+               AND WS-QUOTES-FLAG-OFF
+      ***          GET READY TO PROCESS THE NEXT TOKEN ***
+                   SET WS-TOK-FLAG-INIT-COMPLETE TO TRUE
+                   ADD 1     TO WS-TOK-TBL-IDX
+                   MOVE ZERO TO WS-TOK-CHAR-IDX
+                   IF  WS-TOK-TBL-SIZE > CSN-TOK-TBL-SIZE-MAX
+                       DISPLAY 'ERROR,UNEXPECTED TOKEN OVERFLOW'
+                       PERFORM 999-CANCEL THRU 999-EXIT
+                   END-IF
+               END-IF
+
+               IF  WS-STMT-FLAG-THIS
+               AND (    IN-REC-COBOL-CODE(WS-IDX:1) NOT = ' '
+                    OR  WS-QUOTES-FLAG-ON )
+      ***          BUILD THE TOKEN TABLE ENTRY ***
+                   SET WS-TOK-FLAG-MOVE TO TRUE
+      ***          TOKS, TRUNCATED IF MAX TOK SIZE EXCEEDED ***
+                   IF  WS-TOK-CHAR-IDX < CSN-TOK-SIZE-MAX
+                       ADD 1 TO WS-TOK-CHAR-IDX
+                       MOVE IN-REC-COBOL-CODE(WS-IDX:1)
+                         TO WS-TOK(WS-TOK-TBL-IDX)(WS-TOK-CHAR-IDX:1)
+                   END-IF
+               END-IF
+
+               IF  IN-REC-COBOL-CODE(WS-IDX:1) = CSA-QUOTE
+      ***          TURN QUOTES PROCESSING ON / OFF ***
+                   IF  WS-QUOTES-FLAG-OFF
+                       SET WS-QUOTES-FLAG-ON  TO TRUE
+                   ELSE
+                       SET WS-QUOTES-FLAG-OFF TO TRUE
+                   END-IF
+               END-IF
+
+           END-PERFORM.
+
+           COMPUTE WS-TOK-TBL-SIZE  = WS-TOK-TBL-IDX.
+      ***
+      **** GET THE FROM, TO, LEN, AND REDEFINES COPYBOOK DATA ***
+      ***
+           IF  IN-REC-FROM NOT = SPACE
+           AND IN-REC-TO   NOT = SPACE
+           AND IN-REC-LEN  NOT = SPACE
+      ***      CHECK FOR VALID FROM TO AND LEN ***
+               INSPECT IN-REC-FROM REPLACING ALL ' ' BY '0'
+               INSPECT IN-REC-TO   REPLACING ALL ' ' BY '0'
+               INSPECT IN-REC-LEN  REPLACING ALL ' ' BY '0'
+
+               IF  IN-REC-FROM-N NUMERIC
+               AND IN-REC-TO-N   NUMERIC
+               AND IN-REC-LEN-N  NUMERIC
+                   IF IN-REC-FROM-N NOT > IN-REC-TO-N
+                      COMPUTE WS-N = IN-REC-TO-N
+                                   - IN-REC-FROM-N
+                                   + 1
+                      IF WS-N = IN-REC-LEN-N
+      ***                VALID "FROM" "TO" AND "LEN" DETECTED ***
+                         COMPUTE RH-FROM = IN-REC-FROM-N
+                         COMPUTE RH-TO   = IN-REC-TO-N
+                         COMPUTE RH-LEN  = IN-REC-LEN-N
+                         MOVE    IN-REC-REDEFINE-IND
+                           TO    RH-REDEFINES-IND
+                      ELSE
+                          COMPUTE WS-N = WS-N / IN-REC-LEN-N
+                          IF  IN-REC-REDEFINE-IND = 'O'
+                          AND WS-N-INTEGER        > ZERO
+                          AND WS-N-FRACTION       = ZERO
+      ***                     LEN REPORTED IS MULTIPLE OF OCCURS LEN ***
+      ***                     ASSUME VALID "FROM", "TO", & "LEN" FOUND *
+                              COMPUTE RH-FROM = IN-REC-FROM-N
+                              COMPUTE RH-TO   = IN-REC-TO-N
+                              COMPUTE RH-LEN  = IN-REC-LEN-N
+                              MOVE    IN-REC-REDEFINE-IND
+                                TO    RH-REDEFINES-IND
+                          END-IF
+                      END-IF
+               END-IF
+           END-IF.
+      ***
+      **** COBOL STATEMENT END ***
+      ***
+           IF  WS-STMT-FLAG-NEXT
+               PERFORM 150-COBOL-STATEMENT-END THRU 150-EXIT
+           END-IF.
+      ***
+      **** READ NEXT RECORD ***
+      ***
+           PERFORM 600-READ-IN-FILE THRU 600-EXIT.
+
+       100-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * STATEMENT END PROCESS
+      *---------------------------------------------------------------*
+       150-COBOL-STATEMENT-END.
+
+      ***  GET COPYBOOK, & FIELD-NAME DATA ***
+           MOVE WS-COPYBOOK TO RH-COPYBOOK.
+           IF  WS-TOK-TBL-SIZE > 1
+               MOVE WS-TOK(2) TO RH-FIELD-NAME
+           END-IF.
+
+      ***  PROCESS PIC, PIC DATA-TYPE, AND OCCURS INFO ***
+           PERFORM VARYING WS-TOK-TBL-IDX FROM 1 BY 1
+             UNTIL WS-TOK-TBL-IDX = WS-TOK-TBL-SIZE
+
+      ***       EX: "... OCCURS 99 TIMES ..." ***
+                IF  WS-TOK(WS-TOK-TBL-IDX)(1:7) = 'OCCURS '
+                    COMPUTE WS-IDX = WS-TOK-TBL-IDX + 2
+                    IF  WS-TOK(WS-IDX)(1:6) = 'TIMES '
+                        COMPUTE WS-IDX = WS-TOK-TBL-IDX + 1
+                            PERFORM VARYING WS-IDX2 FROM 1 BY 1
+                               UNTIL WS-TOK(WS-IDX) (WS-IDX2:1) = ' '
+                            END-PERFORM
+                            COMPUTE WS-IDX2 = WS-IDX2 - 1
+                            IF  WS-IDX2 > 0
+                            AND WS-IDX2 < LENGTH OF RH-OCCURS
+                                COMPUTE WS-IDX3
+                                      = LENGTH OF RH-OCCURS
+                                      - WS-IDX2 + 1
+                                MOVE WS-TOK(WS-IDX)(1:WS-IDX2)
+                                  TO RH-OCCURS (WS-IDX3:WS-IDX2)
+                                IF  RH-OCCURS NOT NUMERIC
+                                    MOVE ZERO TO RH-OCCURS
+                                END-IF
+                            END-IF
+                    END-IF
+                END-IF
+
+      ***       EX: "... PIC XXX COMP ... " ***
+                IF  WS-TOK(WS-TOK-TBL-IDX)(1:4) = 'PIC '
+                    COMPUTE WS-IDX = WS-TOK-TBL-IDX + 1
+                    MOVE WS-TOK(WS-IDX) TO RH-PICTURE
+
+                    IF  WS-IDX < WS-TOK-TBL-SIZE
+                        ADD 1 TO WS-IDX
+                        IF  WS-TOK(WS-IDX)(1:6) NOT = 'VALUE '
+                        AND WS-TOK(WS-IDX)(1:7) NOT = 'OCCURS '
+                            MOVE WS-TOK(WS-IDX) TO RH-DATA-TYPE
+                            IF  WS-TOK(WS-IDX)(1:6) = 'USAGE '
+                                IF  WS-IDX < WS-TOK-TBL-SIZE
+                                    ADD 1 TO WS-IDX
+                                    MOVE WS-TOK(WS-IDX)(1:14)
+                                      TO RH-DATA-TYPE(7:14)
+                                END-IF
+                            END-IF
+                        END-IF
+                    END-IF
+
+                END-IF
+
+           END-PERFORM.
+
+           IF  RH-PICTURE = SPACES
+
+               EVALUATE WS-TOK-TBL-SIZE
+
+               WHEN 2
+      ***        EX: "05 FIELD-NAME." ***
+                 MOVE 'N/A'     TO RH-PICTURE
+                 MOVE 'GROUP'   TO RH-DATA-TYPE
+                 PERFORM 175-LEVEL-01-FROM-TO-LEN THRU 175-EXIT
+
+               WHEN 4
+      ***        EX: "88 FIELD-NAME VALUE X." ***
+                 IF  WS-TOK(1)(1:2) = '88'
+                 AND WS-TOK(3)(1:6) = 'VALUE '
+                     MOVE 'N/A'     TO RH-PICTURE
+                     MOVE '88'      TO RH-DATA-TYPE
+                     COMPUTE RH-FROM = 9999
+                     COMPUTE RH-TO   = 9999
+                     COMPUTE RH-LEN  = 9999
+                 ELSE
+      ***            EX: "05 FIELD-NAME VALUE X." ***
+                     IF  WS-TOK(3)(1:6) = 'VALUE '
+                         MOVE 'N/A'     TO RH-PICTURE
+                         MOVE 'GROUP'   TO RH-DATA-TYPE
+                         PERFORM 175-LEVEL-01-FROM-TO-LEN THRU 175-EXIT
+                     ELSE
+      ***                EX: "05 FIELD-NAME REDEFINES FIELD-NAME-X." **
+                         IF  WS-TOK(3)(1:10) = 'REDEFINES '
+                             MOVE 'N/A'     TO RH-PICTURE
+                             MOVE 'GROUP'   TO RH-DATA-TYPE
+                         END-IF
+                     END-IF
+                 END-IF
+
+               WHEN OTHER
+                 CONTINUE
+
+               END-EVALUATE
+
+           END-IF.
+
+      **** COMPUTE RECORD SEQUENCE NUMBER ***
+           ADD 1 TO AC-SEQ.
+           MOVE AC-SEQ TO RH-SEQ.
+
+      ***
+      **** WRITE OUT-REC ***
+      ***
+           PERFORM 650-WRITE-OUT-REC THRU 650-EXIT.
+
+      ***
+      **** PRINT THE REPORT -----------***
+      ***
+           MOVE RH-REC TO DL1-DATA.
+
+      ***  MANUAL BLANK OF LEADING ZEROES ***
+           PERFORM VARYING WS-IDX FROM 1 BY 1
+           UNTIL WS-IDX = LENGTH OF RH-REC
+                 COMPUTE WS-IDX2 = WS-IDX + 1
+                 COMPUTE WS-IDX3 = WS-IDX + 2
+                 IF  DL1-DATA(WS-IDX:1) = LOW-VALUES
+                     MOVE SPACES TO DL1-DATA(WS-IDX:1)
+                 END-IF
+                 IF  DL1-DATA(WS-IDX:1)      = SPACES
+                 AND DL1-DATA(WS-IDX2:1)     = '0'
+                 AND DL1-DATA(WS-IDX3:1) NOT = LOW-VALUES
+                     MOVE SPACES TO DL1-DATA(WS-IDX2:1)
+                 END-IF
+           END-PERFORM.
+
+           PERFORM 700-PRINT         THRU 700-EXIT.
+
+      ***  SIMPLE ERROR CHECK ***
+           IF  RH-COPYBOOK   = SPACE
+           OR  RH-FIELD-NAME = SPACE
+           OR  RH-PICTURE    = SPACES
+           OR  RH-FROM       = ZERO
+           OR  RH-TO         = ZERO
+           OR  RH-LEN        = ZERO
+               MOVE ALL '*'                            TO DL1-DATA
+               MOVE 'ERROR,UNEXPECTED / PARTIAL DATA ' TO DL1-DATA
+               PERFORM 700-PRINT THRU 700-EXIT
+               IF  CC-RETURN-CODE < +8
+                   MOVE +8 TO CC-RETURN-CODE
+               END-IF
+           END-IF.
+
+      ***
+      **** INITIALIZE TOKEN WORK FIELDS FOR NEXT COPYBOOK RECORD ***
+      ***
+           PERFORM 050-TOKEN-INIT    THRU 050-EXIT.
+
+       150-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * COMPUTE A LEVEL 01 GROUP ITEM'S FROM, TO, & LEN
+      *---------------------------------------------------------------*
+       175-LEVEL-01-FROM-TO-LEN.
+           IF  WS-TOK(1)(1:2) = '01'
+               COMPUTE RH-FROM = 1
+               INSPECT IN-REC-LEN  REPLACING ALL ' ' BY '0'
+
+               IF  WS-TOK(2)(26:1) > SPACE
+      ***          PATCH FOR FIELD NAME OF LEN = 27    ***
+      ***          RESEARCH FOR GREATER LEN'S REQD ??? ***
+                   MOVE '0' TO IN-REC-LEN (1:1)
+               END-IF
+
+               IF  IN-REC-LEN-N NUMERIC
+                   COMPUTE RH-TO  = IN-REC-LEN-N
+                   COMPUTE RH-LEN = IN-REC-LEN-N
+               ELSE
+                   COMPUTE RH-FROM = 9999
+                   COMPUTE RH-TO   = 9999
+                   COMPUTE RH-LEN  = 9999
+               END-IF
+           END-IF.
+       175-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * READ IN-FILE
+      *---------------------------------------------------------------*
+       600-READ-IN-FILE.
+           READ IN-FILE.
+           MOVE CC-IN-FILE TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+
+               IF  IN-REC-COPY-IND    NOT = 'C'
+               OR  IN-REC-COMMENT-IND NOT = SPACES
+               OR  IN-REC-COBOL-CODE      = SPACES
+      ***          FILTER - NON COPYBOOK, COMMENT, OR SPACE LINE ***
+                   ADD 1 TO AC-IN-REC-SKIP
+
+                   IF  IN-REC-SEQ-LEFT = 'CPY-->'
+                   AND IN-REC-COBOL-CODE(1:5) = 'COPY '
+      ***              SAVE THE NAME OF THE COPYBOOK ***
+                       MOVE IN-REC-COBOL-CODE(6:8) TO WS-COPYBOOK
+                   END-IF
+
+                   GO TO 600-READ-IN-FILE
+               ELSE
+                   ADD 1 TO AC-IN-REC
+               END-IF
+
+           ELSE
+               IF CC-STATUS = CC-EOF
+                   CONTINUE
+               ELSE
+                   DISPLAY 'ERROR,READ,IN-FILE,CC: ' CC-STATUS
+                   PERFORM 999-CANCEL THRU 999-EXIT
+               END-IF
+           END-IF.
+       600-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * WRITE OUT-REC
+      *---------------------------------------------------------------*
+       650-WRITE-OUT-REC.
+           WRITE OUT-REC FROM RH-REC.
+           MOVE CC-OUT-FILE TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               ADD 1 TO AC-OUT-REC
+           ELSE
+               DISPLAY 'ERROR,WRITE,OUT-REC,CC: ' CC-STATUS
+               PERFORM 999-CANCEL THRU 999-EXIT
+           END-IF.
+       650-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * PRINT REPORT
+      *---------------------------------------------------------------*
+       700-PRINT.
+           ADD 1 TO AC-LINE.
+           IF AC-LINE > 60
+               ADD  1 TO AC-PAGE
+               MOVE AC-PAGE TO HL1-PAGE
+               WRITE PRINT-REC FROM HL1 AFTER ADVANCING TOP-OF-PAGE
+               WRITE PRINT-REC FROM HL2 AFTER ADVANCING 1 LINES
+               WRITE PRINT-REC FROM HL3 AFTER ADVANCING 2 LINES
+               WRITE PRINT-REC FROM DL1 AFTER ADVANCING 1 LINES
+               MOVE 5 TO AC-LINE
+           ELSE
+               WRITE PRINT-REC FROM DL1
+           END-IF.
+       700-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+      * CANCEL ROUTINE
+      *---------------------------------------------------------------*
+       999-CANCEL.
+           DISPLAY 'FMBXXX,ABNORMAL END * * * * * * * *'.
+           MOVE +16 TO RETURN-CODE.
+           STOP RUN.
+       999-EXIT. EXIT.

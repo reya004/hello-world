@@ -1,0 +1,244 @@
+000100 IDENTIFICATION DIVISION.                                         BBLA78
+000200 PROGRAM-ID. BBLA78.                                              BBLA78
+000300 AUTHOR. TONY REY.                                                BBLA78
+000400 DATE-WRITTEN. 11/13/91.                                          BBLA78
+000500 DATE-COMPILED.                                                   BBLA78
+000600*================================================================*BBLA78
+000700* PROGRAM NARRATIVE                                               BBLA78
+000800*================================================================*BBLA78
+000900* THIS PROGRAM PRINTS THE BILLBACK LOADING/ALLOWANCE PERCENTAGE   BBLA78
+001000* FILES FOR THE GENERAL.                                          BBLA78
+001100*================================================================*BBLA78
+001200* MODIFICATION LOG                                                BBLA78
+001300*================================================================*BBLA78
+001400* MM/DD/YY  PROGRAMMER  PROBLEM/RFS NUMBER: DESCRIPTION           BBLA78
+001500* --------  ----------  ------------------------------------------BBLA78
+001600* 11/13/91  TONY REY    29050: RFS TO WRITE PROGRAM.              BBLA78
+001600* 04/13/92  TONY REY    42725: INCREASE BB/LA PERCENTS            TR041392
+001700*================================================================*BBLA78
+001800 ENVIRONMENT DIVISION.                                            BBLA78
+001900 CONFIGURATION SECTION.                                           BBLA78
+002000 SOURCE-COMPUTER.      IBM-370.                                   BBLA78
+002100 OBJECT-COMPUTER.      IBM-370.                                   BBLA78
+002200 SPECIAL-NAMES.                                                   BBLA78
+002300     C01 IS P-TOP.                                                BBLA78
+002400 INPUT-OUTPUT SECTION.                                            BBLA78
+002500 FILE-CONTROL.                                                    BBLA78
+002600     SELECT BB-FILE            ASSIGN TO UT-S-BBLA781I            BBLA78
+002700                               STATUS IS BB-FILE-CC.              BBLA78
+002800     SELECT PARM-FILE          ASSIGN TO UT-S-BBLA782I            BBLA78
+002900                               STATUS IS PARM-FILE-CC.            BBLA78
+003000     SELECT PRINT-FILE         ASSIGN TO UT-S-BBLA781O.           BBLA78
+003100 DATA DIVISION.                                                   BBLA78
+003200 FILE SECTION.                                                    BBLA78
+003300*----------------------------------------------------------------*BBLA78
+003400 FD  BB-FILE                                                      BBLA78
+003500     RECORDING MODE IS F                                          BBLA78
+003600     RECORD CONTAINS 80 CHARACTERS                                BBLA78
+003700     BLOCK  CONTAINS 0  RECORDS                                   BBLA78
+003800     LABEL RECORDS ARE STANDARD                                   BBLA78
+003900     DATA RECORD IS BB-REC.                                       BBLA78
+004000 01  BB-REC.                                                      BBLA78
+004100     05 BB-TERM          PIC X(03).                               BBLA78
+004200     05 FILLER           PIC X(01).                               BBLA78
+004300     05 BB-CUST          PIC X(6).                                BBLA78
+004400     05 FILLER           PIC X(01).                               BBLA78
+004500     05 BB-CUST-NAME     PIC X(37).                               BBLA78
+004600     05 FILLER           PIC X(01).                               BBLA78
+004700     05 BB-BB-PERCENT-X.                                          BBLA78
+004800        10 BB-BB-PERCENT PIC 9(04).                               TR041392
+004900     05 FILLER           PIC X(01).                               BBLA78
+005000     05 BB-LA-PERCENT-X.                                          BBLA78
+005100        10 BB-LA-PERCENT PIC 9(04).                               TR041392
+005200     05 FILLER           PIC X(01).                               BBLA78
+005300     05 BB-AUTO          PIC X(01).                               BBLA78
+005400     05 FILLER           PIC X(22).                               BBLA78
+005500*----------------------------------------------------------------*BBLA78
+005600 FD  PARM-FILE                                                    BBLA78
+005700     RECORDING MODE IS F                                          BBLA78
+005800     RECORD CONTAINS 80 CHARACTERS                                BBLA78
+005900     BLOCK  CONTAINS 0  RECORDS                                   BBLA78
+006000     LABEL RECORDS ARE STANDARD                                   BBLA78
+006100     DATA RECORD IS PARM-REC.                                     BBLA78
+006200 01  PARM-REC.                                                    BBLA78
+006300     05 FILLER         PIC X(80).                                 BBLA78
+006400*----------------------------------------------------------------*BBLA78
+006500 FD  PRINT-FILE                                                   BBLA78
+006600     LABEL RECORDS ARE STANDARD                                   BBLA78
+006700     RECORD CONTAINS 133  CHARACTERS                              BBLA78
+006800     BLOCK CONTAINS 0 RECORDS                                     BBLA78
+006900     DATA RECORD IS PRINT-REC.                                    BBLA78
+007000 01  PRINT-REC.                                                   BBLA78
+007100     05 FILLER         PIC X(133).                                BBLA78
+007200 EJECT                                                            BBLA78
+007300*================================================================*BBLA78
+007400 WORKING-STORAGE SECTION.                                         BBLA78
+007500*================================================================*BBLA78
+007600 77  BB-FILE-CC             PIC XX   VALUE SPACES.                BBLA78
+007700 77  PARM-FILE-CC           PIC XX   VALUE SPACES.                BBLA78
+007800*----------------------------------------------------------------*BBLA78
+007900 01  FH-FIELD-HOLD.                                               BBLA78
+008000     05  FILLER             PIC X(01).                            BBLA78
+008100*----------------------------------------------------------------*BBLA78
+008200 77  AC-BB-FILE             PIC 9(6) VALUE ZERO.                  BBLA78
+008300 77  AC-LINES               PIC 9(3) VALUE 99.                    BBLA78
+008400 77  AC-PAGES               PIC 9(4) VALUE ZERO.                  BBLA78
+008500*----------------------------------------------------------------*BBLA78
+008600* PRINT SPECIFICATIONS                                            BBLA78
+008700*----------------------------------------------------------------*BBLA78
+008800 01  HL1.                                                         BBLA78
+008900     05  FILLER             PIC X      VALUE SPACES.              BBLA78
+009000     05  FILLER             PIC X(57)  VALUE 'BBLA78-01'.         BBLA78
+009100     05  FILLER             PIC X(35)                             BBLA78
+009200         VALUE 'WATKINS MOTOR LINES INC'.                         BBLA78
+009300     05  FILLER             PIC X(28)  VALUE SPACES.              BBLA78
+009400     05  FILLER             PIC X(05)  VALUE 'PAGE '.             BBLA78
+009500     05  HL1-PAGE           PIC ZZZ9.                             BBLA78
+009600                                                                  BBLA78
+009700 01  HL2.                                                         BBLA78
+009800     05  FILLER             PIC X      VALUE SPACES.              BBLA78
+009900     05  HL2-CUST-NAME      PIC X(57)  VALUE SPACES.              BBLA78
+010000     05  FILLER             PIC X(35)                             BBLA78
+010100         VALUE 'BILLBACK LOADING/ALLOWANCE'.                      BBLA78
+010200     05  FILLER             PIC X(28)  VALUE SPACES.              BBLA78
+010300     05  HL2-DATE           PIC X(8).                             BBLA78
+010400     05  FILLER             PIC X(01)  VALUE SPACES.              BBLA78
+010500                                                                  BBLA78
+010600 01  HL3.                                                         BBLA78
+010700     05 FILLER              PIC X(02) VALUE  SPACES.              BBLA78
+010800                                                                  BBLA78
+010900 01  HL4.                                                         BBLA78
+011000     05 FILLER              PIC X(01) VALUE  SPACES.              BBLA78
+011100     05 FILLER              PIC X(09) VALUE  'TERMINAL '.         BBLA78
+011200     05 FILLER              PIC X(09) VALUE  'CUSTOMER '.         BBLA78
+011300     05 FILLER              PIC X(05) VALUE  SPACES.              BBLA78
+011400     05 FILLER              PIC X(38) VALUE  'CUSTOMER '.         BBLA78
+011500     05 FILLER              PIC X(13) VALUE  '    BILLBACK'.      TR041392
+011600     05 FILLER              PIC X(13) VALUE  ' LOAD/ ALLOW'.      TR041392
+011700                                                                  BBLA78
+011800 01  HL5.                                                         BBLA78
+011900     05 FILLER              PIC X(01) VALUE  SPACES.              BBLA78
+012000     05 FILLER              PIC X(09) VALUE  'NUMBER '.           BBLA78
+012100     05 FILLER              PIC X(09) VALUE  'NUMBER '.           BBLA78
+012200     05 FILLER              PIC X(05) VALUE  'AUTO '.             BBLA78
+012300     05 FILLER              PIC X(38) VALUE  'NAME '.             BBLA78
+012400     05 FILLER              PIC X(13) VALUE  '  PERCENTAGE'.      TR041392
+012500     05 FILLER              PIC X(13) VALUE  '  PERCENTAGE'.      TR041392
+012600                                                                  BBLA78
+012700 01  DL1.                                                         BBLA78
+012800     05 FILLER              PIC X(01) VALUE SPACES.               BBLA78
+012900     05 DL1-TERM            PIC X(09) VALUE SPACES.               BBLA78
+013000     05 DL1-CUST            PIC X(09) VALUE SPACES.               BBLA78
+013100     05 DL1-AUTO            PIC X(05) VALUE SPACES.               BBLA78
+013200     05 DL1-CUST-NAME       PIC X(38) VALUE SPACES.               BBLA78
+013300     05 DL1-BB-PERCENT-X.                                         BBLA78
+013400        10 FILLER           PIC X(07) VALUE SPACES.               TR041392
+013500        10 DL1-BB-PERCENT   PIC ZZ9.99.                           TR041392
+013600     05 DL1-LA-PERCENT-X.                                         BBLA78
+013700        10 FILLER           PIC X(07) VALUE SPACES.               TR041392
+013800        10 DL1-LA-PERCENT   PIC ZZ9.99.                           TR041392
+013900 EJECT                                                            BBLA78
+014000*================================================================*BBLA78
+014100 PROCEDURE DIVISION.                                              BBLA78
+014200*================================================================*BBLA78
+014300 MABB-PROGRAM.                                                    BBLA78
+014400 OPEN-FILES.                                                      BBLA78
+014500     OPEN INPUT BB-FILE                                           BBLA78
+014600                PARM-FILE.                                        BBLA78
+014700     OPEN OUTPUT PRINT-FILE.                                      BBLA78
+014800 READ-PARM-FILE.                                                  BBLA78
+014900     READ PARM-FILE.                                              BBLA78
+015000     IF PARM-FILE-CC = '00'                                       BBLA78
+015100         MOVE PARM-REC TO HL2-CUST-NAME                           BBLA78
+015200     ELSE                                                         BBLA78
+015300         DISPLAY 'ERROR,READ,PARM-FILE,RC: ' PARM-FILE-CC         BBLA78
+015400         PERFORM 999-CANCEL THRU                                  BBLA78
+015500                 999-CANCEL-EXIT.                                 BBLA78
+015600 GET-DATE.                                                        BBLA78
+015700     MOVE CURRENT-DATE TO HL2-DATE.                               BBLA78
+015800 INITIAL-BB-READ.                                                 BBLA78
+015900     PERFORM 100-READ-BB-FILE THRU                                BBLA78
+016000             100-READ-BB-FILE-EXIT.                               BBLA78
+016100 REPORT-PROCESS.                                                  BBLA78
+016200     PERFORM 050-REPORT THRU                                      BBLA78
+016300             050-REPORT-EXIT                                      BBLA78
+016400             UNTIL BB-FILE-CC = '10'.                             BBLA78
+016500 CLOSE-FILES.                                                     BBLA78
+016600     DISPLAY 'INPUT RECORDS: ' AC-BB-FILE.                        BBLA78
+016700     CLOSE BB-FILE                                                BBLA78
+016800           PARM-FILE                                              BBLA78
+016900           PRINT-FILE.                                            BBLA78
+017000     DISPLAY 'BBLA78 NORMAL PROGRAM END'.                         BBLA78
+017100 FINISH-PROGRAM.                                                  BBLA78
+017200     STOP RUN.                                                    BBLA78
+017300*---------------------------------------------------------------* BBLA78
+017400* LOGIC TO RESTATE AND RELEASE RECORDS TO SORT                    BBLA78
+017500*---------------------------------------------------------------* BBLA78
+017600 050-REPORT.                                                      BBLA78
+017700 050-BYPASS.                                                      BBLA78
+017800     IF BB-TERM = 'AAA'                                           BBLA78
+017900         GO TO 050-READ.                                          BBLA78
+018000 050-MOVE.                                                        BBLA78
+018100     MOVE BB-TERM        TO DL1-TERM.                             BBLA78
+018200     MOVE BB-CUST        TO DL1-CUST.                             BBLA78
+018300     MOVE BB-AUTO        TO DL1-AUTO.                             BBLA78
+018400     MOVE BB-CUST-NAME   TO DL1-CUST-NAME.                        BBLA78
+018500 050-MOVE-BB-AMT.                                                 BBLA78
+018600     IF BB-BB-PERCENT NUMERIC                                     BBLA78
+018700         MOVE BB-BB-PERCENT TO DL1-BB-PERCENT                     BBLA78
+018800     ELSE                                                         BBLA78
+018700         MOVE BB-BB-PERCENT-X TO DL1-BB-PERCENT-X.
+019000 050-MOVE-LA-AMT.                                                 BBLA78
+019100     IF BB-LA-PERCENT NUMERIC                                     BBLA78
+019200         MOVE BB-LA-PERCENT TO DL1-LA-PERCENT                     BBLA78
+019300     ELSE                                                         BBLA78
+019200         MOVE BB-LA-PERCENT-X TO DL1-LA-PERCENT-X.
+019500 050-PRINT.                                                       BBLA78
+019600     PERFORM 500-PRINT-DETAIL THRU                                BBLA78
+019700             500-PRINT-DETAIL-EXIT.                               BBLA78
+019800 050-READ.                                                        BBLA78
+019900     PERFORM 100-READ-BB-FILE THRU                                BBLA78
+020000             100-READ-BB-FILE-EXIT.                               BBLA78
+020100 050-REPORT-EXIT. EXIT.                                           BBLA78
+020200*---------------------------------------------------------------* BBLA78
+020300* READ THE INPUT FILE                                             BBLA78
+020400*---------------------------------------------------------------* BBLA78
+020500 100-READ-BB-FILE.                                                BBLA78
+020600     READ BB-FILE.                                                BBLA78
+020700     IF BB-FILE-CC = '00'                                         BBLA78
+020800         ADD 1 TO AC-BB-FILE                                      BBLA78
+020900     ELSE                                                         BBLA78
+021000         IF BB-FILE-CC = '10'                                     BBLA78
+021100             NEXT SENTENCE                                        BBLA78
+021200         ELSE                                                     BBLA78
+021300             DISPLAY 'ERROR,READ,BB-FILE,RC: ' BB-FILE-CC         BBLA78
+021400             PERFORM 999-CANCEL THRU                              BBLA78
+021500                     999-CANCEL-EXIT.                             BBLA78
+021600 100-READ-BB-FILE-EXIT. EXIT.                                     BBLA78
+021700*----------------------------------------------------------------*BBLA78
+021800 500-PRINT-DETAIL.                                                BBLA78
+021900     IF AC-LINES > 56                                             BBLA78
+022000         PERFORM 550-PRINT-HEADER THRU                            BBLA78
+022100                 550-PRINT-HEADER-EXIT.                           BBLA78
+022200     WRITE PRINT-REC FROM DL1 AFTER ADVANCING 1 LINE.             BBLA78
+022300     ADD 1 TO AC-LINES.                                           BBLA78
+022400 500-PRINT-DETAIL-EXIT. EXIT.                                     BBLA78
+022500*----------------------------------------------------------------*BBLA78
+022600 550-PRINT-HEADER.                                                BBLA78
+022700     ADD 1 TO AC-PAGES.                                           BBLA78
+022800     MOVE AC-PAGES TO HL1-PAGE.                                   BBLA78
+022900     WRITE PRINT-REC FROM HL1 AFTER ADVANCING P-TOP.              BBLA78
+023000     WRITE PRINT-REC FROM HL2 AFTER ADVANCING 1.                  BBLA78
+023100     WRITE PRINT-REC FROM HL3 AFTER ADVANCING 1.                  BBLA78
+023200     WRITE PRINT-REC FROM HL4 AFTER ADVANCING 1.                  BBLA78
+023300     WRITE PRINT-REC FROM HL5 AFTER ADVANCING 1.                  BBLA78
+023400     MOVE 5 TO AC-LINES.                                          BBLA78
+023500 550-PRINT-HEADER-EXIT. EXIT.                                     BBLA78
+023600*---------------------------------------------------------------* BBLA78
+023700* CANCEL ROUTINE                                                  BBLA78
+023800*---------------------------------------------------------------* BBLA78
+023900 999-CANCEL.                                                      BBLA78
+024000     DISPLAY 'ERROR,ABNORMAL END * * * * * * * *'.                BBLA78
+024100     MOVE +16 TO RETURN-CODE.                                     BBLA78
+024200     STOP RUN.                                                    BBLA78
+024300 999-CANCEL-EXIT. EXIT.                                           BBLA78

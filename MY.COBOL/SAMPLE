@@ -1,0 +1,592 @@
+000100 IDENTIFICATION DIVISION.                                         SAMPLE
+000200 PROGRAM-ID. SAMPLE.                                              SAMPLE
+000300 AUTHOR. TONY REY.                                                SAMPLE
+000400 DATE-WRITTEN. 07/16/91.                                          SAMPLE
+000500 DATE-COMPILED.                                                   SAMPLE
+000600*================================================================*SAMPLE
+000700* PROGRAM NARRATIVE                                               SAMPLE
+000800*================================================================*SAMPLE
+000900* THIS IS A SAMPLE PROGRAM.                                       SAMPLE
+001000*================================================================*SAMPLE
+001100* MODIFICATION LOG                                                SAMPLE
+001200*================================================================*SAMPLE
+001300* MM/DD/YY  PROGRAMMER  PROBLEM/RFS NUMBER: DESCRIPTION           SAMPLE
+001400* --------  ----------  ------------------------------------------SAMPLE
+001500* 07/16/91  TONY REY    SAMPLE                                    SAMPLE
+001600*================================================================*SAMPLE
+001700 ENVIRONMENT DIVISION.                                            SAMPLE
+001800 CONFIGURATION SECTION.                                           SAMPLE
+001900 SOURCE-COMPUTER.      IBM-370.                                   SAMPLE
+002000 OBJECT-COMPUTER.      IBM-370.                                   SAMPLE
+002100 SPECIAL-NAMES.                                                   SAMPLE
+002200     C01 IS P-TOP.                                                SAMPLE
+002300 INPUT-OUTPUT SECTION.                                            SAMPLE
+002400 FILE-CONTROL.                                                    SAMPLE
+002500     SELECT IN-FILE            ASSIGN TO UT-S-GA81101U            SAMPLE
+002600                               STATUS IS IN-FILE-CC.              SAMPLE
+002700     SELECT AUDIT-FILE         ASSIGN TO UT-S-AUDITO              SAMPLE
+002800                               STATUS IS AUDIT-FILE-CC.           SAMPLE
+002900     SELECT TRACT-FILE         ASSIGN TO UT-S-GA81105I            SAMPLE
+003000                               STATUS IS TRACT-FILE-CC.           SAMPLE
+003100     SELECT SORT-FILE          ASSIGN TO UT-S-SORTWKN.            SAMPLE
+003200     SELECT PRINT-FILE         ASSIGN TO UT-S-GA81106O.           SAMPLE
+003300 DATA DIVISION.                                                   SAMPLE
+003400 FILE SECTION.                                                    SAMPLE
+003500/*----------------------------------------------------------------SAMPLE
+003600 FD  IN-FILE                                                      SAMPLE
+003700     RECORDING MODE IS F                                          SAMPLE
+003800     RECORD CONTAINS 72 CHARACTERS                                SAMPLE
+003900     BLOCK CONTAINS 0  RECORDS                                    SAMPLE
+004000     LABEL RECORDS ARE STANDARD                                   SAMPLE
+004100     DATA RECORD IS IN-REC.                                       SAMPLE
+004200 01  IN-REC.                                                      SAMPLE
+004300     05  FILLER         PIC X(2).                                 SAMPLE
+004400     05  BE             PIC X(2).                                 SAMPLE
+004500     05  FILLER         PIC X(2).                                 SAMPLE
+004600     05  REFNO          PIC S9(5)        COMP-3.                  SAMPLE
+004700     05  FILLER         PIC X(3).                                 SAMPLE
+004800     05  UNIT-NO.                                                 SAMPLE
+004900         10  UNIT-1     PIC X(1).                                 SAMPLE
+005000         10  UNIT-R.                                              SAMPLE
+005100             15  UNIT-2 PIC X(1).                                 SAMPLE
+005200             15  UNIT-3 PIC X(1).                                 SAMPLE
+005300             15  UNIT-4 PIC X(1).                                 SAMPLE
+005400             15  UNIT-5 PIC X(1).                                 SAMPLE
+005500             15  UNIT-6 PIC X(1).                                 SAMPLE
+005600             15  UNIT-7 PIC X(1).                                 SAMPLE
+005700     05  FLEET          PIC X(1).                                 SAMPLE
+005800     05  DXTE           PIC X(5).                                 SAMPLE
+005900     05  ACCT.                                                    SAMPLE
+006000         10  ACCT-1234  PIC X(04).                                SAMPLE
+006100         10  ACCT-56789 PIC X(05).                                SAMPLE
+006200     05  FILLER         PIC X(01).                                SAMPLE
+006300     05  DESC           PIC X(22).                                SAMPLE
+006400     05  FILLER         PIC X(02).                                SAMPLE
+006500     05  AMT            PIC S9(5)V9(2)   COMP-3.                  SAMPLE
+006600     05  TXPE           PIC X(1).                                 SAMPLE
+006700     05  GALLONS        PIC S9(3)V9.                              SAMPLE
+006800     05  AGYCOD         PIC X(1).                                 SAMPLE
+006900     05  FILLER         PIC X(3).                                 SAMPLE
+007000*----------------------------------------------------------------*SAMPLE
+007100 FD  PRINT-FILE                                                   SAMPLE
+007200     LABEL RECORDS ARE STANDARD                                   SAMPLE
+007300     RECORD CONTAINS 133  CHARACTERS                              SAMPLE
+007400     BLOCK CONTAINS 0 RECORDS                                     SAMPLE
+007500     DATA RECORD IS PRINT-REC.                                    SAMPLE
+007600 01  PRINT-REC.                                                   SAMPLE
+007700     05 FILLER         PIC X(133).                                SAMPLE
+007800*----------------------------------------------------------------*SAMPLE
+007900 FD  TRACT-FILE                                                   SAMPLE
+008000     LABEL RECORDS ARE STANDARD                                   SAMPLE
+008100     RECORD CONTAINS 14 CHARACTERS                                SAMPLE
+008200     BLOCK CONTAINS 0 RECORDS                                     SAMPLE
+008300     DATA RECORD IS TRACT-REC.                                    SAMPLE
+008400 01  TRACT-REC.                                                   SAMPLE
+008500     05  TRACT-COMP              PIC X(4).                        SAMPLE
+008600     05  TRACT-UNIT              PIC X(6).                        SAMPLE
+008700     05  TRACT-SECT              PIC X(4).                        SAMPLE
+008800*----------------------------------------------------------------*SAMPLE
+008900 FD  AUDIT-FILE                                                   SAMPLE
+009000     LABEL RECORDS ARE STANDARD                                   SAMPLE
+009100     RECORD CONTAINS 58 CHARACTERS                                SAMPLE
+009200     BLOCK CONTAINS 0 RECORDS                                     SAMPLE
+009300     DATA RECORD IS AUDIT-REC.                                    SAMPLE
+009400 01  AUDIT-REC.                                                   SAMPLE
+009500     05  AUDIT-COMP             PIC X(4).                         SAMPLE
+009600     05  AUDIT-SECT             PIC X(4).                         SAMPLE
+009700     05  AUDIT-ACCT.                                              SAMPLE
+009800         10  ACCT-1234          PIC X(04).                        SAMPLE
+009900         10  ACCT-56789         PIC X(05).                        SAMPLE
+010000     05  AUDIT-BE               PIC X(2).                         SAMPLE
+010100     05  AUDIT-DESC             PIC X(22).                        SAMPLE
+010200     05  AUDIT-AMT              PIC S9(5)V9(2).                   SAMPLE
+010300     05  AUDIT-GAL              PIC S9(3)V9.                      SAMPLE
+010400     05  AUDIT-UNIT             PIC X(6).                         SAMPLE
+010500*----------------------------------------------------------------*SAMPLE
+010600 SD  SORT-FILE                                                    SAMPLE
+010700     DATA RECORD IS SORT-REC.                                     SAMPLE
+010800 01  SORT-REC.                                                    SAMPLE
+010900     05  SORT-COMP              PIC X(4).                         SAMPLE
+011000     05  SORT-SECT              PIC X(4).                         SAMPLE
+011100     05  SORT-ACCT.                                               SAMPLE
+011200         10  ACCT-1234          PIC X(04).                        SAMPLE
+011300         10  ACCT-56789         PIC X(05).                        SAMPLE
+011400     05  SORT-BE                PIC X(2).                         SAMPLE
+011500     05  SORT-DESC              PIC X(22).                        SAMPLE
+011600     05  SORT-AMT               PIC S9(5)V9(2).                   SAMPLE
+011700     05  SORT-GAL               PIC S9(3)V9.                      SAMPLE
+011800     05  SORT-UNIT              PIC X(6).                         SAMPLE
+011900 EJECT                                                            SAMPLE
+012000*================================================================*SAMPLE
+012100 WORKING-STORAGE SECTION.                                         SAMPLE
+012200*================================================================*SAMPLE
+012300 77  TRACT-FILE-CC               PIC XX   VALUE SPACES.           SAMPLE
+012400 77  IN-FILE-CC                  PIC XX   VALUE SPACES.           SAMPLE
+012500 77  AUDIT-FILE-CC               PIC XX   VALUE SPACES.           SAMPLE
+012600 77  SORT-FILE-CC                PIC XX   VALUE SPACES.           SAMPLE
+012700 77  SORT-RETURN-DISP            PIC 99   VALUE ZERO.             SAMPLE
+012800*----------------------------------------------------------------*SAMPLE
+012900 01  FH-FIELD-HOLD.                                               SAMPLE
+013000     05  FH-COMP                 PIC X(4).                        SAMPLE
+013100     05  FH-SECT                 PIC X(4).                        SAMPLE
+013200     05  FH-ACCT                 PIC X(9).                        SAMPLE
+013300*----------------------------------------------------------------*SAMPLE
+013400 01  WS-BE           PIC X(02).                                   SAMPLE
+013500     88  SW-BE-WML   VALUE                                        SAMPLE
+013600         '01' '03' '04' '06' '07' '09' '10' '11' '12'.            SAMPLE
+013700     88  SW-BE-LSP   VALUE                                        SAMPLE
+013800         '02' '60' '61' '62' '63'  '64' '65' '66'.                SAMPLE
+013900*----------------------------------------------------------------*SAMPLE
+014000 01  WS-UNIT.                                                     SAMPLE
+014100     05  WS-UNIT-1     PIC X(1).                                  SAMPLE
+014200     05  WS-UNIT-R.                                               SAMPLE
+014300         10  WS-UNIT-2 PIC X(1).                                  SAMPLE
+014400         10  WS-UNIT-3 PIC X(1).                                  SAMPLE
+014500         10  WS-UNIT-4 PIC X(1).                                  SAMPLE
+014600         10  WS-UNIT-5 PIC X(1).                                  SAMPLE
+014700         10  WS-UNIT-6 PIC X(1).                                  SAMPLE
+014800         10  WS-UNIT-7 PIC X(1).                                  SAMPLE
+014900*----------------------------------------------------------------*SAMPLE
+015000 77  AC-IN-FILE                  PIC 9(6) VALUE ZERO.             SAMPLE
+015100 77  AC-LINES             PIC 9(3)    VALUE 99.                   SAMPLE
+015200 77  AC-PAGES             PIC 9(4)    VALUE ZERO.                 SAMPLE
+015300***                                                               SAMPLE
+015400 77  AC-ACCT-GAL          PIC S9(6)V9(01) VALUE ZERO.             SAMPLE
+015500 77  AC-SECT-GAL          PIC S9(6)V9(01) VALUE ZERO.             SAMPLE
+015600 77  AC-COMP-GAL          PIC S9(6)V9(01) VALUE ZERO.             SAMPLE
+015700 77  AC-FINI-GAL          PIC S9(6)V9(01) VALUE ZERO.             SAMPLE
+015800***                                                               SAMPLE
+015900 77  AC-ACCT-AMT          PIC S9(7)V9(02) VALUE ZERO.             SAMPLE
+016000 77  AC-SECT-AMT          PIC S9(7)V9(02) VALUE ZERO.             SAMPLE
+016100 77  AC-COMP-AMT          PIC S9(7)V9(02) VALUE ZERO.             SAMPLE
+016200 77  AC-FINI-AMT          PIC S9(8)V9(02) VALUE ZERO.             SAMPLE
+016300*----------------------------------------------------------------*SAMPLE
+016400* PRINT SPECIFICATIONS                                            SAMPLE
+016500*----------------------------------------------------------------*SAMPLE
+016600 01  HL1.                                                         SAMPLE
+016700     05  FILLER    PIC X      VALUE SPACES.                       SAMPLE
+016800     05  FILLER    PIC X(08)  VALUE 'GL421-01'.                   SAMPLE
+016900     05  FILLER    PIC X(49)  VALUE SPACES.                       SAMPLE
+017000     05  HL1-COMP  PIC X(35)  VALUE SPACES.                       SAMPLE
+017100     05  FILLER    PIC X(33)  VALUE SPACES.                       SAMPLE
+017200     05  HL1-PAGE  PIC   Z(4).                                    SAMPLE
+017300                                                                  SAMPLE
+017400 01  HL2.                                                         SAMPLE
+017500     10  FILLER    PIC X      VALUE SPACES.                       SAMPLE
+017600     10  HL2-DATE  PIC X(8).                                      SAMPLE
+017700     10  FILLER    PIC X(49)  VALUE SPACES.                       SAMPLE
+017800     10  FILLER    PIC X(35)  VALUE 'FUEL SALES FOR PERIOD 06'.   SAMPLE
+017900                                                                  SAMPLE
+018000 01  HL3.                                                         SAMPLE
+018100     05  FILLER               PIC X(01) VALUE SPACES.             SAMPLE
+018200     05  HL3-01               PIC X(08) VALUE 'SECTION'.          SAMPLE
+018300     05  HL3-02               PIC X(13) VALUE 'ACCOUNT'.          SAMPLE
+018400     05  HL3-03               PIC X(26) VALUE 'DESCRIPTION'.      SAMPLE
+018500     05  HL3-04               PIC X(06) VALUE 'BE'.               SAMPLE
+018600     05  HL3-05               PIC X(22) VALUE                     SAMPLE
+018700                                        '           AMOUNT '.     SAMPLE
+018800     05  HL3-06               PIC X(15) VALUE '  GALLONS'.        SAMPLE
+018900                                                                  SAMPLE
+019000 01  DL1.                                                         SAMPLE
+019100     05  FILLER               PIC X(01)  VALUE SPACES.            SAMPLE
+019200     05  DL1-01.                                                  SAMPLE
+019300         10  DL1-SECT         PIC X(04).                          SAMPLE
+019400         10  FILLER           PIC X(04).                          SAMPLE
+019500     05  DL1-02.                                                  SAMPLE
+019600         10  DL1-ACCT         PIC X(09).                          SAMPLE
+019700         10  FILLER           PIC X(04).                          SAMPLE
+019800     05  DL1-03.                                                  SAMPLE
+019900         10  DL1-DESC         PIC X(22).                          SAMPLE
+020000         10  FILLER           PIC X(04).                          SAMPLE
+020100     05  DL1-04.                                                  SAMPLE
+020200         10  DL1-BE           PIC X(02).                          SAMPLE
+020300         10  FILLER           PIC X(04).                          SAMPLE
+020400     05  DL1-05.                                                  SAMPLE
+020500         10  DL1-AMT          PIC ZZ,ZZZ,ZZZ,ZZZ.99-.             SAMPLE
+020600         10  FILLER           PIC X(04).                          SAMPLE
+020700     05  DL1-06.                                                  SAMPLE
+020800         10  DL1-GAL          PIC ZZZ,ZZZ.99-.                    SAMPLE
+020900         10  FILLER           PIC X(04).                          SAMPLE
+021000*----------------------------------------------------------------*SAMPLE
+021100* RESTATEMENT TABEL.                                              SAMPLE
+021200*----------------------------------------------------------------*SAMPLE
+021300 01  R-TBL.                                                       SAMPLE
+021400     05  R-TBL-SIZE       PIC S9(4) COMP VALUE +0.                SAMPLE
+021500     05  R-TBL-SIZE-MAX   PIC S9(4) COMP VALUE +1200.             SAMPLE
+021600     05  R-TBL-IDX        PIC 9(5).                               SAMPLE
+021700***  05  R-TBL-IDX-SYS    INTERNAL INDEX USED BY SYSTEM           SAMPLE
+021800     05  R-TBL-ENTRY OCCURS 1 TO 1200 TIMES                       SAMPLE
+021900                     DEPENDING ON R-TBL-SIZE                      SAMPLE
+022000                     INDEXED BY R-TBL-IDX-SYS.                    SAMPLE
+022100         10  R-COMP       PIC X(4).                               SAMPLE
+022200         10  R-UNIT       PIC X(6).                               SAMPLE
+022300         10  R-SECT       PIC X(4).                               SAMPLE
+022400 EJECT                                                            SAMPLE
+022500*================================================================*SAMPLE
+022600 PROCEDURE DIVISION.                                              SAMPLE
+022700*================================================================*SAMPLE
+022800 MAIN-PROGRAM.                                                    SAMPLE
+022900     SORT SORT-FILE ASCENDING KEY SORT-COMP                       SAMPLE
+023000                                  SORT-SECT                       SAMPLE
+023100                                  SORT-ACCT                       SAMPLE
+023200                                  SORT-BE                         SAMPLE
+023300                                  SORT-DESC                       SAMPLE
+023400          INPUT PROCEDURE                                         SAMPLE
+023500             025-SORT-INPUT THRU                                  SAMPLE
+023600             025-SORT-INPUT-EXIT                                  SAMPLE
+023700          OUTPUT PROCEDURE                                        SAMPLE
+023800             200-SORT-OUTPUT THRU                                 SAMPLE
+023900             200-SORT-OUTPUT-EXIT.                                SAMPLE
+024000 SORT-OPERATION-CC.                                               SAMPLE
+024100     IF SORT-RETURN NOT = 0                                       SAMPLE
+024200         MOVE SORT-RETURN TO SORT-RETURN-DISP                     SAMPLE
+024300         DISPLAY 'ERROR,SORT OPERATION,RC: ' SORT-RETURN-DISP     SAMPLE
+024400         PERFORM 999-CANCEL THRU                                  SAMPLE
+024500                 999-CANCEL-EXIT.                                 SAMPLE
+024600 FINISH-PROGRAM.                                                  SAMPLE
+024700     STOP RUN.                                                    SAMPLE
+024800 EJECT                                                            SAMPLE
+024900*---------------------------------------------------------------* SAMPLE
+025000* SORT INPUT PROC: MAIN PROCESS TO RELEASE RESTATED RECORDS       SAMPLE
+025100* TO SORT.                                                        SAMPLE
+025200*---------------------------------------------------------------* SAMPLE
+025300 025-SORT-INPUT SECTION.                                          SAMPLE
+025400 025-OPEN-FILES.                                                  SAMPLE
+025500     OPEN INPUT IN-FILE                                           SAMPLE
+025600                TRACT-FILE.                                       SAMPLE
+025700 025-LOAD-RESTATEMENT-TBL.                                        SAMPLE
+025800     PERFORM 125-LOAD-TRACTOR THRU                                SAMPLE
+025900             125-LOAD-TRACTOR-EXIT.                               SAMPLE
+026000 025-INITIAL-READ.                                                SAMPLE
+026100     PERFORM 100-READ-IN-FILE THRU                                SAMPLE
+026200             100-READ-IN-FILE-EXIT.                               SAMPLE
+026300 025-RESTATEMENT.                                                 SAMPLE
+026400     PERFORM 050-RESTATEMENT THRU                                 SAMPLE
+026500             050-RESTATEMENT-EXIT                                 SAMPLE
+026600             UNTIL IN-FILE-CC = '10'.                             SAMPLE
+026700 025-CLOSE-FILES.                                                 SAMPLE
+026800     CLOSE IN-FILE                                                SAMPLE
+026900           TRACT-FILE.                                            SAMPLE
+027000 025-SORT-INPUT-EXIT. EXIT.                                       SAMPLE
+027100*---------------------------------------------------------------* SAMPLE
+027200* LOGIC TO RESTATE AND RELEASE RECORDS TO SORT                    SAMPLE
+027300*---------------------------------------------------------------* SAMPLE
+027400 050-RESTATEMENT.                                                 SAMPLE
+027500 050-BE.                                                          SAMPLE
+027600     MOVE BE TO SORT-BE                                           SAMPLE
+027700                WS-BE.                                            SAMPLE
+027800 050-COMP.                                                        SAMPLE
+027900     IF SW-BE-WML                                                 SAMPLE
+028000         MOVE '0403' TO SORT-COMP                                 SAMPLE
+028100     ELSE                                                         SAMPLE
+028200         IF SW-BE-LSP                                             SAMPLE
+028300             MOVE '0515' TO SORT-COMP                             SAMPLE
+028400         ELSE                                                     SAMPLE
+028500             MOVE SPACES TO SORT-COMP.                            SAMPLE
+028600 050-SECT.                                                        SAMPLE
+028700***  SORT-SECT SET BY 075-RESTATEMENT *                           SAMPLE
+028800     PERFORM 075-RESTATEMENT THRU                                 SAMPLE
+028900             075-RESTATEMENT-EXIT.                                SAMPLE
+029000 050-OTHER.                                                       SAMPLE
+029100     MOVE UNIT-NO TO SORT-UNIT.                                   SAMPLE
+029200     MOVE ACCT    TO SORT-ACCT.                                   SAMPLE
+029300     MOVE AMT     TO SORT-AMT.                                    SAMPLE
+029400     MOVE GALLONS TO SORT-GAL.                                    SAMPLE
+029500     MOVE DESC    TO SORT-DESC.                                   SAMPLE
+029600 050-RELEASE.                                                     SAMPLE
+029700     RELEASE SORT-REC.                                            SAMPLE
+029800     IF SORT-RETURN NOT = 0                                       SAMPLE
+029900         MOVE SORT-RETURN TO SORT-RETURN-DISP                     SAMPLE
+030000         DISPLAY 'ERROR,SORT RELEASE,RC: ' SORT-RETURN-DISP       SAMPLE
+030100         PERFORM 999-CANCEL THRU                                  SAMPLE
+030200                 999-CANCEL-EXIT.                                 SAMPLE
+030300 050-READ.                                                        SAMPLE
+030400     PERFORM 100-READ-IN-FILE THRU                                SAMPLE
+030500             100-READ-IN-FILE-EXIT.                               SAMPLE
+030600 050-RESTATEMENT-EXIT. EXIT.                                      SAMPLE
+030700*---------------------------------------------------------------* SAMPLE
+030800* LOOKUP INTO THE RESTATEMENT TABLE IN ORDER TO SET SECT.         SAMPLE
+030900*---------------------------------------------------------------* SAMPLE
+031000 075-RESTATEMENT.                                                 SAMPLE
+031100 075-FORMAT-UNIT.                                                 SAMPLE
+031200     MOVE UNIT-NO TO WS-UNIT.                                     SAMPLE
+031300     IF WS-UNIT-2 NOT NUMERIC                                     SAMPLE
+031400          MOVE ZERO TO WS-UNIT-2.                                 SAMPLE
+031500     IF WS-UNIT-3 NOT NUMERIC                                     SAMPLE
+031600          MOVE ZERO TO WS-UNIT-3.                                 SAMPLE
+031700     IF WS-UNIT-4 NOT NUMERIC                                     SAMPLE
+031800          MOVE ZERO TO WS-UNIT-4.                                 SAMPLE
+031900     IF WS-UNIT-5 NOT NUMERIC                                     SAMPLE
+032000          MOVE ZERO TO WS-UNIT-5.                                 SAMPLE
+032100     IF WS-UNIT-6 NOT NUMERIC                                     SAMPLE
+032200          MOVE ZERO TO WS-UNIT-6.                                 SAMPLE
+032300     IF WS-UNIT-7 NOT NUMERIC                                     SAMPLE
+032400          MOVE ZERO TO WS-UNIT-7.                                 SAMPLE
+032500 075-SEARCH-INIT.                                                 SAMPLE
+032600     MOVE 1 TO R-TBL-IDX.                                         SAMPLE
+032700 075-SEARCH.                                                      SAMPLE
+032800     IF WS-UNIT-R = R-UNIT (R-TBL-IDX) AND                        SAMPLE
+032900        SORT-COMP = R-COMP (R-TBL-IDX)                            SAMPLE
+033000         MOVE R-SECT (R-TBL-IDX) TO SORT-SECT                     SAMPLE
+033100     ELSE                                                         SAMPLE
+033200         ADD 1 TO R-TBL-IDX                                       SAMPLE
+033300         IF R-TBL-IDX > R-TBL-SIZE                                SAMPLE
+033400             MOVE SPACES TO SORT-SECT                             SAMPLE
+033500         ELSE                                                     SAMPLE
+033600             GO TO 075-SEARCH.                                    SAMPLE
+033700 075-RESTATEMENT-EXIT. EXIT.                                      SAMPLE
+033800*---------------------------------------------------------------* SAMPLE
+033900* READ THE INPUT FILE                                             SAMPLE
+034000*---------------------------------------------------------------* SAMPLE
+034100 100-READ-IN-FILE.                                                SAMPLE
+034200     READ IN-FILE.                                                SAMPLE
+034300     IF IN-FILE-CC = '00'                                         SAMPLE
+034400         ADD 1 TO AC-IN-FILE                                      SAMPLE
+034500     ELSE                                                         SAMPLE
+034600         IF IN-FILE-CC = '10'                                     SAMPLE
+034700             NEXT SENTENCE                                        SAMPLE
+034800         ELSE                                                     SAMPLE
+034900             DISPLAY 'ERROR,READ,IN-FILE,RC: ' IN-FILE-CC         SAMPLE
+035000             PERFORM 999-CANCEL THRU                              SAMPLE
+035100                     999-CANCEL-EXIT.                             SAMPLE
+035200 100-READ-IN-FILE-EXIT. EXIT.                                     SAMPLE
+035300*---------------------------------------------------------------* SAMPLE
+035400* LOAD TRACTOR RESTATEMENT TABLE                                  SAMPLE
+035500*---------------------------------------------------------------* SAMPLE
+035600 125-LOAD-TRACTOR.                                                SAMPLE
+035700 125-TRACTOR-LOOP.                                                SAMPLE
+035800     READ TRACT-FILE.                                             SAMPLE
+035900     IF TRACT-FILE-CC = '00'                                      SAMPLE
+036000         NEXT SENTENCE                                            SAMPLE
+036100     ELSE                                                         SAMPLE
+036200         IF TRACT-FILE-CC = '10'                                  SAMPLE
+036300             GO TO 125-LOAD-TRACTOR-EXIT                          SAMPLE
+036400         ELSE                                                     SAMPLE
+036500             DISPLAY 'ERROR,READ,TRACT-FILE,RC: ' TRACT-FILE-CC   SAMPLE
+036600             PERFORM 999-CANCEL THRU                              SAMPLE
+036700                     999-CANCEL-EXIT.                             SAMPLE
+036800 125-ADD-TO-TABLE.                                                SAMPLE
+036900     ADD  1          TO R-TBL-SIZE.                               SAMPLE
+037000     MOVE TRACT-COMP TO R-COMP (R-TBL-SIZE).                      SAMPLE
+037100     MOVE TRACT-UNIT TO R-UNIT (R-TBL-SIZE).                      SAMPLE
+037200     MOVE TRACT-SECT TO R-SECT (R-TBL-SIZE).                      SAMPLE
+037300     IF R-TBL-SIZE < R-TBL-SIZE-MAX                               SAMPLE
+037400         GO TO 125-TRACTOR-LOOP.                                  SAMPLE
+037500 125-TRACTOR-OVERFLOW.                                            SAMPLE
+037600     DISPLAY 'ERROR,R-TBL OVERFLOW'.                              SAMPLE
+037700     PERFORM 999-CANCEL THRU                                      SAMPLE
+037800             999-CANCEL-EXIT.                                     SAMPLE
+037900 125-LOAD-TRACTOR-EXIT. EXIT.                                     SAMPLE
+038000 EJECT                                                            SAMPLE
+038100*---------------------------------------------------------------* SAMPLE
+038200* SORT OUTPUT PROC: MAIN PROCESS TO READ SORTED RESTATED RECORDS  SAMPLE
+038300* IN ORDER TO PRODUCE REPORT.                                     SAMPLE
+038400*---------------------------------------------------------------* SAMPLE
+038500 200-SORT-OUTPUT SECTION.                                         SAMPLE
+038600 200-OPEN-FILES.                                                  SAMPLE
+038700     OPEN OUTPUT PRINT-FILE                                       SAMPLE
+038800                 AUDIT-FILE.                                      SAMPLE
+038900 200-INITIAL-PROCESS.                                             SAMPLE
+039000     PERFORM 220-SORT-RETURN THRU                                 SAMPLE
+039100             220-SORT-RETURN-EXIT.                                SAMPLE
+039200     IF SORT-FILE-CC = '10'                                       SAMPLE
+039300         DISPLAY 'ERROR,SORT WITH ZERO RECORDS'                   SAMPLE
+039400         GO TO 200-CLOSE-FILES                                    SAMPLE
+039500     ELSE                                                         SAMPLE
+039600         MOVE SORT-COMP TO FH-COMP                                SAMPLE
+039700         MOVE SORT-SECT TO FH-SECT                                SAMPLE
+039800         MOVE SORT-ACCT TO FH-ACCT                                SAMPLE
+039900         PERFORM 255-RESET-HL1 THRU                               SAMPLE
+040000                 255-RESET-HL1-EXIT.                              SAMPLE
+040100 200-REPORTS.                                                     SAMPLE
+040200     PERFORM 215-REPORTS THRU                                     SAMPLE
+040300             215-REPORTS-EXIT                                     SAMPLE
+040400             UNTIL SORT-FILE-CC = '10'.                           SAMPLE
+040500 200-FINAL-BREAK.                                                 SAMPLE
+040600     PERFORM 225-FINAL-BREAK THRU                                 SAMPLE
+040700             225-FINAL-BREAK-EXIT.                                SAMPLE
+040800 200-CLOSE-FILES.                                                 SAMPLE
+040900     CLOSE PRINT-FILE                                             SAMPLE
+041000           AUDIT-FILE.                                            SAMPLE
+041100 200-SORT-OUTPUT-EXIT. EXIT.                                      SAMPLE
+041200 EJECT                                                            SAMPLE
+041300*----------------------------------------------------------------*SAMPLE
+041400* GENERATE REPORTS FROM SORTED DATA                               SAMPLE
+041500*----------------------------------------------------------------*SAMPLE
+041600 215-REPORTS.                                                     SAMPLE
+041700 215-BREAKS.                                                      SAMPLE
+041800     IF SORT-COMP NOT = FH-COMP                                   SAMPLE
+041900         PERFORM 250-COMP-BREAK THRU                              SAMPLE
+042000                 250-COMP-BREAK-EXIT                              SAMPLE
+042100     ELSE                                                         SAMPLE
+042200         IF SORT-SECT NOT = FH-SECT                               SAMPLE
+042300             PERFORM 275-SECT-BREAK THRU                          SAMPLE
+042400                     275-SECT-BREAK-EXIT                          SAMPLE
+042500         ELSE                                                     SAMPLE
+042600             IF SORT-ACCT NOT = FH-ACCT                           SAMPLE
+042700                 PERFORM 300-ACCT-BREAK THRU                      SAMPLE
+042800                         300-ACCT-BREAK-EXIT                      SAMPLE
+042900             ELSE                                                 SAMPLE
+043000                 NEXT SENTENCE.                                   SAMPLE
+043100 215-LOWEST-BREAK.                                                SAMPLE
+043200     ADD SORT-GAL TO AC-ACCT-GAL.                                 SAMPLE
+043300     ADD SORT-AMT TO AC-ACCT-AMT.                                 SAMPLE
+043400 215-PRINT-DETAIL.                                                SAMPLE
+043500     MOVE SORT-SECT TO DL1-SECT.                                  SAMPLE
+043600     MOVE SORT-ACCT TO DL1-ACCT.                                  SAMPLE
+043700     MOVE SORT-DESC TO DL1-DESC.                                  SAMPLE
+043800     MOVE SORT-BE   TO DL1-BE.                                    SAMPLE
+043900     MOVE SORT-AMT  TO DL1-AMT.                                   SAMPLE
+044000     MOVE SORT-GAL  TO DL1-GAL.                                   SAMPLE
+044100     PERFORM 500-PRINT-DETAIL THRU                                SAMPLE
+044200             500-PRINT-DETAIL-EXIT.                               SAMPLE
+044300 215-AUDIT-CHECK.                                                 SAMPLE
+044400     MOVE SORT-REC TO AUDIT-REC.                                  SAMPLE
+044500     WRITE AUDIT-REC.                                             SAMPLE
+044600     IF AUDIT-FILE-CC = '00'                                      SAMPLE
+044700         NEXT SENTENCE                                            SAMPLE
+044800     ELSE                                                         SAMPLE
+044900         DISPLAY 'ERROR,WRITE,AUDIT-FILE,RC: ' AUDIT-FILE-CC      SAMPLE
+045000         PERFORM 999-CANCEL THRU                                  SAMPLE
+045100                 999-CANCEL-EXIT.                                 SAMPLE
+045200 215-NEXT-REC.                                                    SAMPLE
+045300     PERFORM 220-SORT-RETURN THRU                                 SAMPLE
+045400             220-SORT-RETURN-EXIT.                                SAMPLE
+045500 215-REPORTS-EXIT. EXIT.                                          SAMPLE
+045600*----------------------------------------------------------------*SAMPLE
+045700 220-SORT-RETURN.                                                 SAMPLE
+045800     RETURN SORT-FILE                                             SAMPLE
+045900            AT END MOVE '10' TO SORT-FILE-CC.                     SAMPLE
+046000 220-SORT-STATUS.                                                 SAMPLE
+046100     IF SORT-RETURN NOT = 0                                       SAMPLE
+046200         MOVE SORT-RETURN TO SORT-RETURN-DISP                     SAMPLE
+046300         DISPLAY 'ERROR,SORT RETURN,RC: ' SORT-RETURN-DISP        SAMPLE
+046400         PERFORM 999-CANCEL THRU                                  SAMPLE
+046500                 999-CANCEL-EXIT.                                 SAMPLE
+046600 220-SORT-RETURN-EXIT. EXIT.                                      SAMPLE
+046700*----------------------------------------------------------------*SAMPLE
+046800 225-FINAL-BREAK.                                                 SAMPLE
+046900 225-LOW-BREAK.                                                   SAMPLE
+047000     PERFORM 250-COMP-BREAK THRU                                  SAMPLE
+047100             250-COMP-BREAK-EXIT.                                 SAMPLE
+047200 225-HIGH-BREAK.                                                  SAMPLE
+047300***  THIS IS THE HIGHEST BREAK *                                  SAMPLE
+047400 225-PRINT-BREAK.                                                 SAMPLE
+047500     MOVE SPACES        TO DL1.                                   SAMPLE
+047600     MOVE 'GRAND TOTAL' TO DL1-DESC.                              SAMPLE
+047700     MOVE AC-FINI-AMT   TO DL1-AMT.                               SAMPLE
+047800     MOVE AC-FINI-GAL   TO DL1-GAL.                               SAMPLE
+047900     PERFORM 525-PRINT-TOTAL THRU                                 SAMPLE
+048000             525-PRINT-TOTAL-EXIT.                                SAMPLE
+048100 225-RESET-BREAK.                                                 SAMPLE
+048200***  THAT'S ALL FOLKS (EOF) *                                     SAMPLE
+048300 225-FINAL-BREAK-EXIT. EXIT.                                      SAMPLE
+048400*----------------------------------------------------------------*SAMPLE
+048500 250-COMP-BREAK.                                                  SAMPLE
+048600 250-LOW-BREAK.                                                   SAMPLE
+048700     PERFORM 275-SECT-BREAK THRU                                  SAMPLE
+048800             275-SECT-BREAK-EXIT.                                 SAMPLE
+048900 250-HIGH-BREAK.                                                  SAMPLE
+049000     ADD AC-COMP-GAL TO AC-FINI-GAL.                              SAMPLE
+049100     ADD AC-COMP-AMT TO AC-FINI-AMT.                              SAMPLE
+049200 250-PRINT-BREAK.                                                 SAMPLE
+049300     MOVE SPACES          TO DL1.                                 SAMPLE
+049400     MOVE 'COMPANY TOTAL' TO DL1-DESC.                            SAMPLE
+049500     MOVE AC-COMP-AMT     TO DL1-AMT.                             SAMPLE
+049600     MOVE AC-COMP-GAL     TO DL1-GAL.                             SAMPLE
+049700     PERFORM 525-PRINT-TOTAL THRU                                 SAMPLE
+049800             525-PRINT-TOTAL-EXIT.                                SAMPLE
+049900 250-RESET-BREAK.                                                 SAMPLE
+050000     MOVE SORT-COMP TO FH-COMP.                                   SAMPLE
+050100     MOVE ZERO      TO AC-COMP-AMT.                               SAMPLE
+050200     MOVE ZERO      TO AC-COMP-GAL.                               SAMPLE
+050300     MOVE 99        TO AC-LINES.                                  SAMPLE
+050400     PERFORM 255-RESET-HL1 THRU                                   SAMPLE
+050500             255-RESET-HL1-EXIT.                                  SAMPLE
+050600 250-COMP-BREAK-EXIT. EXIT.                                       SAMPLE
+050700*----------------------------------------------------------------*SAMPLE
+050800 255-RESET-HL1.                                                   SAMPLE
+050900     IF SORT-FILE-CC = '10'                                       SAMPLE
+051000         MOVE 'ALL COMPANIES' TO HL1-COMP                         SAMPLE
+051100     ELSE                                                         SAMPLE
+051200     IF SORT-COMP = '0403'                                        SAMPLE
+051300         MOVE 'WATKINS MOTOR LINES INC OPERATING' TO HL1-COMP     SAMPLE
+051400     ELSE                                                         SAMPLE
+051500     IF SORT-COMP = '0515'                                        SAMPLE
+051600         MOVE 'LAND SPAN INC OPERATING' TO HL1-COMP               SAMPLE
+051700     ELSE                                                         SAMPLE
+051800         MOVE SORT-COMP TO HL1-COMP.                              SAMPLE
+051900 255-RESET-HL1-EXIT. EXIT.                                        SAMPLE
+052000*----------------------------------------------------------------*SAMPLE
+052100 275-SECT-BREAK.                                                  SAMPLE
+052200 275-LOW-BREAK.                                                   SAMPLE
+052300     PERFORM 300-ACCT-BREAK THRU                                  SAMPLE
+052400             300-ACCT-BREAK-EXIT.                                 SAMPLE
+052500 275-HIGH-BREAK.                                                  SAMPLE
+052600     ADD AC-SECT-GAL TO AC-COMP-GAL.                              SAMPLE
+052700     ADD AC-SECT-AMT TO AC-COMP-AMT.                              SAMPLE
+052800 275-PRINT-BREAK.                                                 SAMPLE
+052900     MOVE SPACES          TO DL1.                                 SAMPLE
+053000     MOVE 'SECTION TOTAL' TO DL1-DESC.                            SAMPLE
+053100     MOVE AC-SECT-AMT     TO DL1-AMT.                             SAMPLE
+053200     MOVE AC-SECT-GAL     TO DL1-GAL.                             SAMPLE
+053300     PERFORM 525-PRINT-TOTAL THRU                                 SAMPLE
+053400             525-PRINT-TOTAL-EXIT.                                SAMPLE
+053500 275-RESET-BREAK.                                                 SAMPLE
+053600     MOVE SORT-SECT TO FH-SECT.                                   SAMPLE
+053700     MOVE ZERO      TO AC-SECT-AMT.                               SAMPLE
+053800     MOVE ZERO      TO AC-SECT-GAL.                               SAMPLE
+053900 275-SECT-BREAK-EXIT. EXIT.                                       SAMPLE
+054000*----------------------------------------------------------------*SAMPLE
+054100 300-ACCT-BREAK.                                                  SAMPLE
+054200 300-LOW-BREAK.                                                   SAMPLE
+054300***  THIS IS THE LOWEST BREAK *                                   SAMPLE
+054400 300-HIGH-BREAK.                                                  SAMPLE
+054500     ADD AC-ACCT-AMT TO AC-SECT-AMT.                              SAMPLE
+054600     ADD AC-ACCT-GAL TO AC-SECT-GAL.                              SAMPLE
+054700 300-PRINT-BREAK.                                                 SAMPLE
+054800     MOVE SPACES          TO DL1.                                 SAMPLE
+054900     MOVE 'ACCOUNT TOTAL' TO DL1-DESC.                            SAMPLE
+055000     MOVE AC-ACCT-AMT     TO DL1-AMT.                             SAMPLE
+055100     MOVE AC-ACCT-GAL     TO DL1-GAL.                             SAMPLE
+055200     PERFORM 525-PRINT-TOTAL THRU                                 SAMPLE
+055300             525-PRINT-TOTAL-EXIT.                                SAMPLE
+055400 300-RESET-BREAK.                                                 SAMPLE
+055500     MOVE SORT-ACCT TO FH-ACCT.                                   SAMPLE
+055600     MOVE ZERO      TO AC-ACCT-AMT.                               SAMPLE
+055700     MOVE ZERO      TO AC-ACCT-GAL.                               SAMPLE
+055800 300-ACCT-BREAK-EXIT. EXIT.                                       SAMPLE
+055900*----------------------------------------------------------------*SAMPLE
+056000 500-PRINT-DETAIL.                                                SAMPLE
+056100     IF AC-LINES > 56                                             SAMPLE
+056200         PERFORM 550-PRINT-HEADER THRU                            SAMPLE
+056300                 550-PRINT-HEADER-EXIT.                           SAMPLE
+056400     WRITE PRINT-REC FROM DL1 AFTER ADVANCING 1 LINE.             SAMPLE
+056500     ADD 1 TO AC-LINES.                                           SAMPLE
+056600 500-PRINT-DETAIL-EXIT. EXIT.                                     SAMPLE
+056700*----------------------------------------------------------------*SAMPLE
+056800 525-PRINT-TOTAL.                                                 SAMPLE
+056900     IF AC-LINES > 56                                             SAMPLE
+057000         PERFORM 550-PRINT-HEADER THRU                            SAMPLE
+057100                 550-PRINT-HEADER-EXIT.                           SAMPLE
+057200     WRITE PRINT-REC FROM DL1 AFTER ADVANCING 2 LINE.             SAMPLE
+057300     ADD 2 TO AC-LINES.                                           SAMPLE
+057400 525-PRINT-TOTAL-EXIT. EXIT.                                      SAMPLE
+057500*----------------------------------------------------------------*SAMPLE
+057600 550-PRINT-HEADER.                                                SAMPLE
+057700     MOVE CURRENT-DATE TO HL2-DATE.                               SAMPLE
+057800     ADD 1 TO AC-PAGES.                                           SAMPLE
+057900     MOVE AC-PAGES TO HL1-PAGE.                                   SAMPLE
+058000     WRITE PRINT-REC FROM HL1 AFTER ADVANCING P-TOP.              SAMPLE
+058100     WRITE PRINT-REC FROM HL2 AFTER ADVANCING 1.                  SAMPLE
+058200     WRITE PRINT-REC FROM HL3 AFTER ADVANCING 2.                  SAMPLE
+058300     MOVE 1 TO AC-LINES.                                          SAMPLE
+058400 550-PRINT-HEADER-EXIT. EXIT.                                     SAMPLE
+058500*---------------------------------------------------------------* SAMPLE
+058600* CANCEL ROUTINE                                                  SAMPLE
+058700*---------------------------------------------------------------* SAMPLE
+058800 999-CANCEL.                                                      SAMPLE
+058900     DISPLAY 'ERROR,ABNORMAL END * * * * * * * *'.                SAMPLE
+059000     MOVE +16 TO RETURN-CODE.                                     SAMPLE
+059100     STOP RUN.                                                    SAMPLE
+059200 999-CANCEL-EXIT. EXIT.                                           SAMPLE

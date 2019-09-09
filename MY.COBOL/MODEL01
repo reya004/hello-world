@@ -1,0 +1,10 @@
+TR0001******************************************************************
+TR0001* PROGRAM CHANGE LOG
+TR0001******************************************************************
+TR0001* DATE     PROGRAMMER     RFS/PRMS#: CHANGE DESCRIPTION
+TR0001* -------- -------------- --------------------------------------
+TR0001* 01/10/96 TONY REY       RFS#99999: ADD EXEC PARM LOGIC WHICH
+TR0001*                         CAN BE USED TO DETERMINE THE CMA SPOOL
+TR0001*                         ENVIRONMENT.  SET PARM-ENV TO 'ESFT'
+TR0001*                         WHEN RUNNING TEST CMA SPOOL.
+TR0001******************************************************************

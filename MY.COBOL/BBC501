@@ -1,0 +1,503 @@
+       IDENTIFICATION DIVISION.                                         TFMS0000
+       PROGRAM-ID.    BBC501.                                           TFMS0000
+       AUTHOR.        TONY REY.                                         TFMS0000
+       INSTALLATION.  WATKINS MOTOR LINES.                              TFMS0000
+       DATE-WRITTEN.  05-06-92.                                         TFMS0000
+       DATE-COMPILED.                                                   TFMS0000
+       ENVIRONMENT DIVISION.                                            TFMS0000
+       CONFIGURATION SECTION.                                           TFMS0000
+       SOURCE-COMPUTER.  IBM-3090.                                      TFMS0000
+       DATA DIVISION.                                                   TFMS0000
+       EJECT                                                            TFMS0000
+      *================================================================*TFMS0000
+       WORKING-STORAGE SECTION.                                         TFMS0000
+      *================================================================*TFMS0000
+      ***  MAP COPYBOOK ***
+           COPY BBM501.                                                 TFMS0000
+      ***  IBM STANDARD MAP ATTRIBUTES COPYBOOK ***
+           COPY DFHBMSCA.                                               TFMS0000
+      ***  UNPROTECT NUMERIC BRIGHT *
+       01  DFHBMBRT             PIC X VALUE 'Q'.
+      ***  IBM STANDARD PF KEY VALUES COPYBOOK ***
+           COPY DFHAID.                                                 TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+      * CONSTANTS                                                       TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+       01  CSA-CONSTANT-ALPHANUMERIC.
+           05  CSA-ERROR        PIC X(1) VALUE 'E'.
+       01  CSA-QMRK.
+           05  CSA-QMRK-CHAR    PIC X(1)  VALUE '?'.
+           05  FILLER           PIC X(30) VALUE LOW-VALUES.
+       01  CSN-CONSTANT-NUMERIC.
+           05  CSN-DEC-128      PIC S9(4) COMP VALUE +128.
+           05  CSN-DEC-128-R    REDEFINES CSN-DEC-128.
+               10  FILLER       PIX X(1).
+               10  CSN-HEX-80   PIC X(1).
+      *----------------------------------------------------------------*TFMS0000
+      * MISCELLANEOUS FIELDS USED FOR EDITING PURPOSES                  TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+       01  WS-NEXTSCRN          PIC X(3)
+           88  SW-NEXTSCRN-OK   VALUE '501' '502' '503' '504'
+                                      '505' '506' '507' '508'.
+       77  WS-E-WORK            PIC X.
+       77  WS-POS               PIC 9(4).
+      *---------------------------------------------------------------*
+      * DATE AND TIME DEFINITIONS AND EDIT FIELDS
+      *---------------------------------------------------------------*
+       01  WS-ABSTIME            PIC S9(15) COMP-3.
+      ***
+       01  WS-SDATE-CMPR.
+           05  WS-SDATE-CMPR-YY PIC XX.
+           05  WS-SDATE-CMPR-MM PIC XX.
+           05  WS-SDATE-CMPR-DD PIC XX.
+       01  WS-EDATE-CMPR.
+           05  WS-EDATE-CMPR-YY  PIC XX.
+           05  WS-EDATE-CMPR-MM  PIC XX.
+           05  WS-EDATE-CMPR-DD  PIC XX.
+      ***
+       01  WS-DATE-DISP.
+           05  WS-DATE-MM        PIC XX.
+           05  FILLER            PIC X   VALUE '/'.
+           05  WS-DATE-DD        PIC XX.
+           05  FILLER            PIC X   VALUE '/'.
+           05  WS-DATE-YY        PIC XX.
+      ***
+       01  WS-DATE-EDITS.
+           05  WS-DATE-IN        PIC 9(6).
+           05  WS-DATE-IN-R      REDEFINES WS-DATE-ENTER.
+               10  WS-DATE-IN-MM PIC 99.
+               10  WS-DATE-IN-DD PIC 99.
+               10  WS-DATE-IN-YY PIC 99.
+      ***
+           05  WS-DATE-LEAP      PIC 9(4)V9(6).
+           05  WS-DATE-LEAP-R    REDEFINES WS-DATE-LEAP.
+               10 WS-DATE-LEAP-INT  PIC 9(4).
+               10 WS-DATE-LEAP-FRAC PIC 9(6).
+      ***
+           05  WS-DAYS-MTH.
+               10 WS-DAYS-JAN    PIC 9(2) VALUE 31.
+               10 WS-DAYS-FEB    PIC 9(2) VALUE 28.
+               10 WS-DAYS-MAR    PIC 9(2) VALUE 31.
+               10 WS-DAYS-APR    PIC 9(2) VALUE 30.
+               10 WS-DAYS-MAY    PIC 9(2) VALUE 31.
+               10 WS-DAYS-JUN    PIC 9(2) VALUE 30.
+               10 WS-DAYS-JUL    PIC 9(2) VALUE 31.
+               10 WS-DAYS-AUG    PIC 9(2) VALUE 31.
+               10 WS-DAYS-SEP    PIC 9(2) VALUE 30.
+               10 WS-DAYS-OCT    PIC 9(2) VALUE 31.
+               10 WS-DAYS-NOV    PIC 9(2) VALUE 30.
+               10 WS-DAYS-DEC    PIC 9(2) VALUE 31.
+           05  WS-DAYS-MTH-R     REDEFINES-WS-DAYS-MTH.
+               10 WS-DAYS-MTH-DD OCCURS 12 TIMES
+                                 PIC 9(2).
+      ***
+       01  WS-TIME-DISP.
+           05  WS-TIME-HH        PIC XX.
+           05  FILLER            PIC X   VALUE ':'.
+           05  WS-TIME-MM        PIC XX.
+           05  FILLER            PIC X   VALUE ':'.
+           05  WS-TIME-SS        PIC XX.
+      *----------------------------------------------------------------*TFMS0000
+      * ERASE EOF FLAGS                                                 TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+       01  WS-FIELD-EOF-FLAGS.
+           05  WS-NEXTSCRN-EOF  PIC X(1).
+           05  WS-SPANCUST-EOF  PIC X(1).
+           05  WS-SDATE-EOF     PIC X(1).
+           05  WS-EDATE-EOF     PIC X(1).
+           05  WS-OPTION-EOF    PIC X(1).
+      *----------------------------------------------------------------*TFMS0000
+      * WORKING STORAGE COPY OF THE COMMUNICATION AREA DATA STRUCTURE.  TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+       77  WS-LEN               PIC S9(4).
+       01  WS-COMMAREA.
+           05  WS-PNLDATE       PIC X(8).
+           05  WS-NEXTSCRN      PIC X(3).
+           05  WS-PNLTIME       PIC X(8).
+           05  WS-SPANCUST      PIC X(9).
+           05  WS-SDATE         PIC X(8).
+           05  WS-EDATE         PIC X(8).
+           05  WS-OPTION        PIC X(1).
+      ***
+           05  WS-E-NEXTSCRN    PIC X.
+           05  WS-E-SPANCUST    PIC X.
+           05  WS-E-SDATE       PIC X.
+           05  WS-E-EDATE       PIC X.
+           05  WS-E-OPTION      PIC X.
+       EJECT
+      *================================================================*TFMS0000
+       LINKAGE SECTION.                                                 TFMS0000
+      *================================================================*TFMS0000
+       01  DFHCOMMAREA.                                                 TFMS0000
+           05  CA-PNLDATE       PIC X(8).
+           05  CA-NEXTSCRN      PIC X(3).
+           05  CA-PNLTIME       PIC X(8).
+           05  CA-SPANCUST      PIC X(9).
+           05  CA-SDATE         PIC X(8).
+           05  CA-EDATE         PIC X(8).
+           05  CA-OPTION        PIC X(1).
+      ***
+           05  CA-E-NEXTSCRN    PIC X.
+           05  CA-E-SPANCUST    PIC X.
+           05  CA-E-SDATE       PIC X.
+           05  CA-E-EDATE       PIC X.
+           05  CA-E-OPTION      PIC X.
+       EJECT                                                            TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+       PROCEDURE DIVISION.                                              TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+       HANDLE-CONDITION.
+           EXEC CICS HANDLE CONDITION ERROR   (999-FATAL-ERROR)
+                                      MAPFAIL (435-NODATA)
+                                      END-EXEC.
+       COMMUNICATION-AREA.
+           IF EIBCALEN = LENGTH OF WS-COMMAREA
+      ***      A COMMUNICATION AREA EXISTS *
+               NEXT SENTENCE
+           ELSE
+      ***      MISSING/INVALID COMMUNICATION AREA - INITIAL PROCESS *
+               GO TO 650-SEND-INITIAL-MAP.                              TFMS0000
+        WHICH-KEY.                                                      TFMS0000
+           IF EIBAID = DFHENTER
+               GO TO 200-RECEIVE-MAP
+           ELSE
+               IF EIBAID = EIBCLEAR OR
+                  EIBAID = DFHPF3
+                   GO TO 900-FINISH-PROGRAM
+               ELSE
+                   MOVE 'INVALID KEY' TO MESSAGEO.
+      *----------------------------------------------------------------*TFMS0000
+      * RECEIVE THE MAP
+      *----------------------------------------------------------------*TFMS0000
+       200-RECEIVE-MAP.                                                 TFMS0000
+           EXEC CICS RECEIVE MAP ('BBM501A')                            TFMS0000
+                MAPSET ('BBM501') END-EXEC.
+       200-RECEIVE-MAP-END.                                             TFMS0000
+      *----------------------------------------------------------------*TFMS0000
+      * MERGE MAP INPUT FIELDS INTO THE COMMUNICATION AREA
+      *----------------------------------------------------------------*TFMS0000
+       300-MERGE.                                                       TFMS0000
+           MOVE SPACES TO WS-FIELD-EOF-FLAGS.
+       300-MERGE-NEXTSCRN.                                              TFMS0000
+           IF NEXTSCRNI > ZERO
+               PERFORM VARYING WS-POS FROM 1 BY 1
+                       UNTIL WS-POS > LENGTH OF NEXTSCRNI
+                   IF NEXTSCRNI (WS-POS:1) = '_'
+                       MOVE SPACE TO NEXTSCRNI (WS-POS:1)
+                   END-IF
+               END-PERFORM
+               MOVE NEXTSCRNI TO CA-NEXTSCRN
+           ELSE
+               IF NEXTSCRNF = CSN-HEX-80
+                   MOVE CSN-HEX-80 TO WS-NEXTSCRN-EOF
+                   MOVE SPACES     TO CA-NEXTSCRN
+               ELSE
+                   NEXT SENTENCE.
+       300-MERGE-SPANCUST.                                              TFMS0000
+           IF SPANCUSTI > ZERO
+               PERFORM VARYING WS-POS FROM 1 BY 1
+                       UNTIL WS-POS > LENGTH OF SPANCUSTI
+                   IF SPANCUSTI (WS-POS:1) = '_'
+                       MOVE SPACE TO SPANCUSTI (WS-POS:1)
+                   END-IF
+               END-PERFORM
+               MOVE SPANCUSTI TO CA-SPANCUST
+           ELSE
+               IF SPANCUSTF = CSN-HEX-80
+                   MOVE CSN-HEX-80 TO WS-SPANCUST-EOF
+                   MOVE SPACES     TO CA-SPANCUST
+               ELSE
+                   NEXT SENTENCE.
+       300-MERGE-SDATE.                                                 TFMS0000
+           IF SDATEL > ZERO
+               PERFORM VARYING WS-POS FROM 1 BY 1
+                       UNTIL WS-POS > LENGTH OF SDATEI
+                   IF SDATEI (WS-POS:1) = '_'
+                       MOVE SPACE TO SDATEI (WS-POS:1)
+                   END-IF
+               END-PERFORM
+               MOVE SDATEI TO CA-SDATE
+           ELSE
+               IF SDATEF = CSN-HEX-80
+                   MOVE CSN-HEX-80 TO WS-SDATE-EOF
+                   MOVE SPACES     TO CA-SDATE
+               ELSE
+                   NEXT SENTENCE.
+       300-MERGE-EDATE.                                                 TFMS0000
+           IF EDATEL > ZERO
+               PERFORM VARYING WS-POS FROM 1 BY 1
+                       UNTIL WS-POS > LENGTH OF EDATEI
+                   IF EDATEI (WS-POS:1) = '_'
+                       MOVE SPACE TO EDATEI (WS-POS:1)
+                   END-IF
+               END-PERFORM
+               MOVE EDATEI TO CA-EDATE
+           ELSE
+               IF EDATEF = CSN-HEX-80
+                   MOVE CSN-HEX-80 TO WS-EDATE-EOF
+                   MOVE SPACES     TO CA-EDATE
+               ELSE
+                   NEXT SENTENCE.
+       300-MERGE-OPTION.                                                TFMS0000
+           IF OPTIONL > ZERO
+               PERFORM VARYING WS-POS FROM 1 BY 1
+                       UNTIL WS-POS > LENGTH OF OPTIONI
+                   IF OPTIONI (WS-POS:1) = '_'
+                       MOVE SPACE TO OPTIONI (WS-POS:1)
+                   END-IF
+               END-PERFORM
+               MOVE OPTIONI TO CA-OPTION
+           ELSE
+               IF OPTIONF = CSN-HEX-80
+                   MOVE CSN-HEX-80 TO WS-OPTION-EOF
+                   MOVE SPACES     TO CA-OPTION
+               ELSE
+                   NEXT SENTENCE.
+       300-MERGE-RESET.                                                 TFMS0000
+      ***  SET THE OUTPUT MAP TO LOW VALUES IN ORDER TO AVOID
+      ***  RETRANSMISSION OF DATA (LOW VALUES ARE NOT TRANSMITTED),
+      ***  AND RESET FIELDS ERASED TO UNDERSCORES '_' *
+           MOVE LOW-VALUES TO BBM501O.
+           IF WS-NEXTSCRN-EOF = CSN-HEX-80
+               MOVE ALL '_' TO NEXTSCRNO.
+           IF WS-SPANCUST-EOF = CSN-HEX-80
+               MOVE ALL '_' TO SPANCUSTO.
+           IF WS-SDATE-EOF    = CSN-HEX-80
+               MOVE ALL '_' TO SDATEO.
+           IF WS-EDATE-EOF    = CSN-HEX-80
+               MOVE ALL '_' TO EDATEO.
+           IF WS-OPTION-EOF   = CSN-HEX-80                      .
+               MOVE ALL '_' TO OPTIONO.
+       300-MERGE-END.                                                   TFMS0000
+      *---------------------------------------------------------------*
+      * EDIT THE DATA IN THE COMMUNICATION AREA
+      *---------------------------------------------------------------*
+       400-EDIT.                                                        TFMS0000
+       400-EDIT-NEXTSCRN.                                               TFMS0000
+           IF CA-NEXTSCRN = SPACES
+               NEXT SENTENCE
+           ELSE
+               MOVE CA-NEXTSCRN TO WS-NEXTSCRN
+               IF SW-NEXTSCRN-OK
+                   NEXT SENTENCE
+               ELSE
+                   MOVE CSA-ERROR TO CA-E-NEXTSCRN.
+       400-EDIT-SPANCUST.                                               TFMS0000
+      ***  NO EDIT AT THIS TIME *
+       400-EDIT-SDATE.                                                  TFMS0000
+           IF CA-SDATE > SPACES
+               MOVE CA-SDATE TO WS-DATE-IN-R
+               PERFORM 400-EDIT-DATE THRU
+                       400-EDIT-DATE-EXIT
+               MOVE WS-E-WORK TO CA-E-SDATE
+           ELSE
+               NEXT SENTENCE.
+       400-EDIT-EDATE.                                                  TFMS0000
+           IF CA-EDATE > SPACES
+               MOVE CA-EDATE TO WS-DATE-IN-R
+               PERFORM 400-EDIT-DATE THRU
+                       400-EDIT-DATE-EXIT
+               MOVE WS-E-WORK TO CA-E-EDATE
+           ELSE
+               NEXT SENTENCE.
+       400-EDIT-DATES-XREF.                                             TFMS0000
+           IF CA-SDATE   > SPACES AND
+              CA-EDATE   > SPACES AND
+              CA-E-SDATE = SPACES AND
+              CA-E-EDATE = SPACES
+               MOVE CA-SDATE-MM TO WS-SDATE-CMPR-MM
+               MOVE CA-SDATE-DD TO WS-SDATE-CMPR-DD
+               MOVE CA-SDATE-YY TO WS-SDATE-CMPR-YY
+               MOVE CA-EDATE-MM TO WS-EDATE-CMPR-MM
+               MOVE CA-EDATE-DD TO WS-EDATE-CMPR-DD
+               MOVE CA-EDATE-YY TO WS-EDATE-CMPR-YY
+               IF WS-EDATE-CMPR < WS-SDATE-CMPR
+                   MOVE CSA-ERROR TO CA-E-SDATE
+                   MOVE CSA-ERROR TO CA-E-EDATE
+           ELSE
+               NEXT SENTENCE.
+       400-EDIT-OPTION.                                                 TFMS0000
+           IF CA-OPTION = SPACES
+               MOVE CSA-ERROR TO CA-E-OPTION.
+       400-EDIT-COMPLETE.                                               TFMS0000
+           GO TO 400-EDIT-END.
+      *---------------------------------------------------------------*
+       400-EDIT-DATE.                                                   TFMS0000
+           MOVE SPACES TO WS-E-WORK.
+           IF WS-DATE-IN NUMERIC
+               IF WS-DATE-IN-MM > ZERO AND
+                  WS-DATE-IN-MM < 13
+                   IF WS-DATE-IN-MM = 2
+                       COMPUTE  WS-DATE-LEAP = WS-DATE-IN-YY / 4
+                       IF WS-DATE-LEAP-FRAC > ZERO
+                           MOVE 28 TO WS-DAYS-FEB
+                       ELSE
+                           MOVE 29 TO WS-DAYS-FEB
+                       END-IF
+                   END-IF
+                   IF WS-DATE-IN-DD < 1 OR
+                      WS-DATE-IN-DD > WS-DAYS-MTH-DD (WS-DATE-IN-MM)
+                       MOVE CSA-ERROR TO WS-E-WORK
+                   END-IF
+               ELSE
+                   MOVE CSA-ERROR TO WS-E-WORK
+               END-IF
+           ELSE
+               MOVE CSA-ERROR TO WS-E-WORK
+           END-IF.
+       400-EDIT-DATE-EXIT. EXIT.                                        TFMS0000
+      ***
+       400-EDIT-END.                                                    TFMS0000
+      *---------------------------------------------------------------*
+      * THE FIELDS IN THE COMMUNICATION AREA HAVE BEEN EDITED.
+      * THE OUTPUT MAP DATA HAS BEEN SET TO LOW-VALUES.  IF AN ERROR
+      * WAS FOUND, ADD THE FIELD TO THE CURSOR PATH, PUT A '?' MARK
+      * IN THE FIRST BYTE OF THE FIELD, AND SET THE ERROR FLAG;
+      * OTHERWISE, RESET THE DEFAULT MAP ATTRIBUTES ONLY.
+      *---------------------------------------------------------------*
+       425-FLAG-RESET.
+       425-FLAG-RESET-NEXTSCRN.
+           MOVE DFHBMUNN TO NEXTSCRNA.
+           IF CA-E-NEXTSCRN = CSA-ERROR
+               MOVE 1        TO WS-ERROR
+               MOVE -1       TO NEXTSCRNL
+               MOVE CSA-QMRK TO NEXTSCRNO
+               MOVE DFHBMBRT TO NEXTSCRNA
+           ELSE
+               NEXT SENTENCE.
+       425-FLAG-RESET-SPANCUST.
+           MOVE DFHBMUNN TO SPANCUSTA.
+           IF CA-E-SPANCUST = CSA-ERROR
+               MOVE 1        TO WS-ERROR
+               MOVE -1       TO SPANCUSTL
+               MOVE CSA-QMRK TO SPANCUSTO
+               MOVE DFHBMBRT TO SPANCUSTA
+           ELSE
+               NEXT SENTENCE.
+       425-FLAG-RESET-SDATE.
+           MOVE DFHBMUNN TO SDATEA.
+           IF CA-E-SDATE = CSA-ERROR
+               MOVE 1        TO WS-ERROR
+               MOVE -1       TO SDATEL
+               MOVE CSA-QMRK TO SDATEO
+               MOVE DFHBMBRT TO SDATEA
+           ELSE
+               NEXT SENTENCE.
+       425-FLAG-RESET-EDATE.
+           MOVE DFHBMUNN TO EDATEA.
+           IF CA-E-EDATE = CSA-ERROR
+               MOVE 1        TO WS-ERROR
+               MOVE -1       TO EDATEL
+               MOVE CSA-QMRK TO EDATEO
+               MOVE DFHBMBRT TO EDATEA
+           ELSE
+               NEXT SENTENCE.
+       425-FLAG-RESET-OPTION.
+           MOVE DFHBMUNN TO OPTIONA.
+           IF CA-E-OPTION = CSA-ERROR
+               MOVE 1        TO WS-ERROR
+               MOVE -1       TO OPTIONL
+               MOVE CSA-QMRK TO OPTIONO
+               MOVE DFHBMBRT TO OPTIONA
+           ELSE
+               NEXT SENTENCE.
+       425-FLAG-ERRORS.
+           IF WS-ERROR = 1
+               MOVE 'PLEASE CORRECT ERRORS' TO MESSAGEO
+               MOVE ZERO                    TO WS-ERROR
+               GO TO 600-SEND-DATAONLY-MAP
+           END-IF.
+       425-INVOKE-MENU-SELECTION.
+           GO TO 800-XCTL.
+       425-FLAG-RESET-END.
+      *---------------------------------------------------------------*
+      * NO DATA ENTERED
+      *---------------------------------------------------------------*
+       435-NODATA.
+      ***  A MAPFAIL EXCEPTION OCCURRED BECAUSE NO DATA WAS ENTERED *
+           MOVE LOW-VALUES            TO BBM501O.
+           MOVE -1                    TO NEXTSCRNL.
+           MOVE 'NO DATA WAS ENTERED' TO MESSAGEO.
+           GO TO 600-SEND-DATAONLY-MAP.
+       435-NODATA-END.
+      *---------------------------------------------------------------*
+      * SEND A DATAONLY MAP
+      *---------------------------------------------------------------*
+       600-SEND-DATAONLY-MAP.
+           EXEC CICS SEND MAP ('BBM501A') MAPSET ('BBM501')
+                DATAONLY END-EXEC.
+       600-SEND-DATAONLY-MAP-END.
+      *---------------------------------------------------------------*
+      * PSEUDO CONVERSATIONAL RETURN
+      *---------------------------------------------------------------*
+       625-RETURN.
+           EXEC CICS RETURN TRANSID (EIBTRNID)
+                COMMAREA (DFHCOMMAREA) LENGTH (EIBCALEN) END-EXEC.
+       625-RENTURN-END.
+      *---------------------------------------------------------------*
+      * PREPARE AND SEND THE INITIAL MAP
+      *---------------------------------------------------------------*
+       650-SEND-INITIAL-MAP.                                            TFMS0000
+           MOVE LOW-VALUES TO BBM501O.
+           MOVE SPACES     TO WS-COMMAREA.
+       650-TIME-DATE-PROCESS.                                           TFMS0000
+           EXEC CICS
+                ASKTIME ABSTIME (WS-ABSTIME)
+           END-EXEC.
+           EXEC CICS
+                FORMATTIME ABSTIME (WS-ABSTIME)
+                           MMDDYY  (WS-DATE-DISP)
+                           TIME    (WS-TIME-DISP)
+           END-EXEC.
+           MOVE WS-DATE-DISP TO PNLDATEO.
+           MOVE WS-DATE-DISP TO WS-PNLDATE.
+           MOVE WS-TIME-DISP TO PNLTIMEO.
+           MOVE WS-TIME-DISP TO WS-PNLTIME.
+       650-SEND-MAP.
+           EXEC CICS SEND MAP ('BBM501A') MAPSET ('BBM501')
+                MAPONLY ERASE END-EXEC.
+       650-SEND-MAP-DATA.
+           EXEC CICS SEND MAP ('BBM501A') MAPSET ('BBM501')
+                DATAONLY ERASE END-EXEC.
+       650-RETURN.
+           MOVE LENGTH OF DFHCOMMAREA TO WS-LEN.
+           EXEC CICS RETURN TRANSID (EIBTRNID)
+                COMMAREA (WS-COMMAREA) LENGTH (WS-LEN)
+           END-EXEC.
+       650-SEND-INITIAL-MAP-END.                                        TFMS0000
+      *---------------------------------------------------------------*
+      * INVOKE THE DESIRED PROCESS SELECTED FROM THE MENU
+      *---------------------------------------------------------------*
+       800-XCTL.
+           IF CA-OPTION = '1'
+               MOVE 'BBC502' TO WS-PROGRAM
+           ELSE
+           IF CA-OPTION = '2'
+               MOVE 'BBC503' TO WS-PROGRAM
+           ELSE
+               NEXT SENTENCE.
+       800-XCTL-NOW.
+           EXEC CICS XCTL PROGRAM (WS-PROGRAM)
+                COMMAREA (DFHCOMMAREA) LENGTH (EIBCALEN)
+           END-EXEC.
+       800-XCTL-END.
+      *---------------------------------------------------------------*
+      * FATAL ERROR PROCESSING
+      *---------------------------------------------------------------*
+       999-FATAL-ERROR.
+       999-FATAL-ERROR-MESSAGE.
+           MOVE 'FATAL ERROR OCCURRED' TO  WS-MESSAGE.
+           MOVE LENGTH OF WS-MESSAGE   TO WS-LEN.
+           EXEC CICS SEND FROM (WS-MESSAGE1) LENGTH(WS-LEN) ERASE
+           END-EXEC.
+       999-DFHCOMMAREA-DISPLAY.
+           MOVE LENGTH OF DFHCOMMAREA  TO WS-LEN.
+           EXEC CICS SEND FROM (DFHCOMMAREA) LENGTH(WS-LEN)
+           END-EXEC.
+       999-FATAL-ERROR-END.
+      *---------------------------------------------------------------*
+      * COMPILER PLEASER
+      *---------------------------------------------------------------*
+       999-PLEASE.
+           GOBACK.
+       999-PLEASE-END.

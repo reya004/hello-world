@@ -1,0 +1,15 @@
+      ***
+           READ FILENAME.
+           READ FILENAME NEXT RECORD.
+           MOVE FILENAME-CC TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               NEXT SENTENCE
+           ELSE
+               IF CC-STATUS = CC-EOF
+               IF CC-STATUS = CC-NOT-FOUND
+                   COBOL STATEMENTS GO HERE
+               ELSE
+                   DISPLAY 'ERROR,READ,FILENAME,CC: ' CC-STATUS
+                   PERFORM 999-CANCEL THRU
+                           999-CANCEL-EXIT.
+      ***

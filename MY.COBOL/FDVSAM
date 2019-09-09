@@ -1,0 +1,4 @@
+003600 FD  BBM-FILE                                                     BB400
+003700     RECORD CONTAINS 80 CHARACTERS                                BB400
+003800     DATA RECORD IS BBM-REC.                                      BB400
+003900     COPY BBMATRIX.                                               BB400

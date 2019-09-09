@@ -1,0 +1,10 @@
+      ***
+           CLOSE FILENAME.
+           MOVE FILENAME-CC TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               NEXT SENTENCE
+           ELSE
+               DISPLAY 'ERROR,CLOSE,FILENAME,CC: ' CC-STATUS
+               PERFORM 999-CANCEL THRU
+                       999-CANCEL-EXIT.
+      ***

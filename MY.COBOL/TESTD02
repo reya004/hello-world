@@ -1,0 +1,129 @@
+//ZDYINTST JOB 1,'PROGRAMMER',CLASS=F,MSGCLASS=R,
+//             REGION=1024K
+//*
+//*********************************************************************
+//*                 CICS VS/COBOL COMPILE AND LINK                    *
+//*********************************************************************
+//*
+//ZDYINTST EXEC  ZDYINTST,PROG=TESTD01
+//TRANS.SYSIN  DD *
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.  TESTD01.
+      *****************************************************************
+      *  TEST PROGRAM FOR THE CICS DEBUGGING CLASS AND FOR INTERTEST. *
+      *                                                               *
+      *  CHANGE ALL 'TESTD01 ' TO YOUR PROGRAM NAME.                  *
+      *  CHANGE ALL 'TD01' TO YOUR TRANSACTION-ID.                    *
+      *                                                               *
+      *  THIS PROGRAM RECEIVES DATA ENTERED ON THE TERMINAL IN THE    *
+      *  FOLLOWING FORMAT:       TD01 1111 + 2222                     *
+      *  EDITS THE DATA ENTERED AND PERFORMS AN ARITHMETIC TD01ULATION*
+      *  IF THE INPUT DATA IS VALID.                                  *
+      *                                                               *
+      *****************************************************************
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       77  FILLER                  PIC X(37)
+                 VALUE 'START OF WORKING STORAGE FOR TESTD01 '.
+       77  INPUT-LENGTH            PIC S9(4) COMP  VALUE +19.
+       77  WS-ERROR-MESSAGE        PIC X(50) VALUE SPACES.
+
+       01  INPUT-OUTPUT-AREA.
+           05  TRANS-ID            PIC X(4).
+           05  FILLER              PIC X.
+           05  OPERAND1            PIC 9(4).
+           05  FILLER              PIC X.
+           05  OPERATION           PIC X.
+           05  FILLER              PIC X.
+           05  OPERAND2            PIC 9(4).
+           05  EQUAL-LITERAL       PIC X(3).
+           05  RESULT              PIC 9(8) VALUE 0.
+
+       01  FILLER                  PIC X(35)
+                 VALUE 'END OF WORKING STORAGE FOR TESTD01 '.
+       LINKAGE SECTION.
+
+       PROCEDURE DIVISION.
+       0100-RECEIVE-EQUATION.
+           EXEC CICS RECEIVE
+               INTO (INPUT-OUTPUT-AREA)
+               LENGTH (INPUT-LENGTH)
+               NOHANDLE
+               END-EXEC.
+
+           IF TRANS-ID NOT = 'TD01'
+                 MOVE 'IMPROPER DATA ENTERED - CLEAR AND TRY AGAIN'
+                   TO WS-ERROR-MESSAGE
+               EXEC CICS SEND FROM (WS-ERROR-MESSAGE)
+                   LENGTH (50)
+               END-EXEC
+               EXEC CICS RETURN END-EXEC.
+
+           MOVE ' = ' TO EQUAL-LITERAL.
+           IF OPERATION = '+'
+               PERFORM 1000-ADD-ROUTINE
+             ELSE
+               IF OPERATION = '-'
+                   PERFORM 2000-SUB-ROUTINE
+                 ELSE
+                   IF OPERATION = '*'
+                       PERFORM 3000-MULT-ROUTINE
+                     ELSE
+                       IF OPERATION = '/'
+                           PERFORM 4000-DIV-ROUTINE
+                         ELSE
+                           MOVE '  INVALID OPERATION CODE - TRY AGAIN'
+                               TO WS-ERROR-MESSAGE
+                           EXEC CICS SEND FROM (WS-ERROR-MESSAGE)
+                               LENGTH (50)
+                           END-EXEC
+                           EXEC CICS RETURN
+                           END-EXEC.
+
+       0200-SEND-RESULT.
+           EXEC CICS SEND
+               FROM (INPUT-OUTPUT-AREA)
+               LENGTH (27)
+               ERASE
+               END-EXEC.
+
+       0300-RETURN-TO-CICS.
+           EXEC CICS RETURN
+               END-EXEC.
+           GOBACK.
+
+       1000-ADD-ROUTINE.
+           COMPUTE RESULT = OPERAND1 + OPERAND2.
+       1000-ADD-ROUTINE-EXIT.
+
+       2000-SUB-ROUTINE.
+           IF OPERAND2 > OPERAND1
+               MOVE ' SECOND OPERAND GREATER THAN FIRST - TRY AGAIN.'
+                      TO WS-ERROR-MESSAGE
+               EXEC CICS SEND FROM (WS-ERROR-MESSAGE)
+                         LENGTH (50)
+               END-EXEC
+               EXEC CICS RETURN
+               END-EXEC
+             ELSE
+               COMPUTE RESULT = OPERAND1 - OPERAND2.
+       2000-SUB-ROUTINE-EXIT.
+
+       3000-MULT-ROUTINE.
+           COMPUTE RESULT = OPERAND1 * OPERAND2.
+       3000-MULT-ROUTINE-EXIT.
+
+       4000-DIV-ROUTINE.
+           IF OPERAND2 = 0
+               MOVE 'COME ON NOW, YOU KNOW BETTER THAN THAT!'
+                      TO WS-ERROR-MESSAGE
+               EXEC CICS SEND FROM (WS-ERROR-MESSAGE)
+                         LENGTH (50)
+               END-EXEC
+               EXEC CICS RETURN
+               END-EXEC
+             ELSE
+               COMPUTE RESULT = OPERAND1 / OPERAND2.
+       4000-DIV-ROUTINE-EXIT.
+

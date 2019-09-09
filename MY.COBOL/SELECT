@@ -1,0 +1,7 @@
+           SELECT FILENAME             ASSIGN TO DA-DDNAMEX
+                                       ORGANIZATION IS INDEXED
+                                       ACCESS IS DYNAMIC
+                                       ACCESS IS RANDOM
+                                       ACCESS IS SEQUENTIAL
+                                       RECORD KEY  IS FILENAME-KEY
+                                       FILE STATUS IS FILENAME-CC.

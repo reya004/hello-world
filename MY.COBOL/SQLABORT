@@ -1,0 +1,16 @@
+               EVALUATE SQLCODE
+               WHEN +0
+                    MOVE TF-FLD2V(1:2)
+                      TO STACK-EVENT-R-H(STACK-LVL-CURR)
+
+               WHEN OTHER
+                    MOVE '2060-EVENT'        TO ABORT-PARAGRAPH
+                    MOVE 'ERROR,EVENT'       TO ABORT-MESSAGE
+                    MOVE 'WMFMT27A'          TO ABORT-DATABASE
+                    MOVE SQLCODE             TO ABORT-SQLCODE           00001360
+                    MOVE SPACES              TO ABORT-FILE-STATUS       00001360
+                    MOVE INI-REC             TO ABORT-KEY               00001360
+                    GO TO 9999-ABORT
+      ***           >-------------->>
+
+               END-EVALUATE

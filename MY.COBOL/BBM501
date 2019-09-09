@@ -1,0 +1,87 @@
+         PRINT ON,NOGEN                                                 00000010
+BBM501   DFHMSD TYPE=MAP,MODE=INOUT,STORAGE=AUTO,SUFFIX=                00000020
+         TITLE 'TONYS TEST PANEL                '                       00000030
+BBM501   DFHMDI SIZE=(24,80),CTRL=(FREEKB,FRSET),COLUMN=1,             *00000040
+               LINE=1,DATA=FIELD,TIOAPFX=YES,OBFMT=NO                   00000050
+         DFHMDF POS=(1,1),LENGTH=16,INITIAL='THIS SCREEN: 501',        *00000060
+               ATTRB=(PROT,NORM)                                        00000070
+         DFHMDF POS=(1,34),LENGTH=10,INITIAL=' MAIN MENU',             *00000080
+               ATTRB=(PROT,BRT)                                         00000090
+         DFHMDF POS=(1,45),LENGTH=1,ATTRB=(PROT,NORM)                   00000100
+         DFHMDF POS=(1,66),LENGTH=5,INITIAL='DATE:',ATTRB=(PROT,       *00000110
+               NORM)                                                    00000120
+* PNLDATE                                                               00000130
+DFH0001  DFHMDF POS=(1,72),LENGTH=8,INITIAL='________',                *00000140
+               ATTRB=(PROT,NORM)                                        00000150
+         DFHMDF POS=(2,1),LENGTH=12,INITIAL='NEXT SCREEN:',            *00000160
+               ATTRB=(PROT,NORM)                                        00000170
+* NEXTSCRN                                                              00000180
+DFH0002  DFHMDF POS=(2,14),LENGTH=3,INITIAL='___',ATTRB=(UNPROT,       *00000190
+               NORM,IC)                                                 00000200
+         DFHMDF POS=(2,18),LENGTH=1,ATTRB=(ASKIP,NORM)                  00000210
+         DFHMDF POS=(2,27),LENGTH=27,INITIAL='BILL BACK LOADING ALLOWAN*00000220
+               CE',ATTRB=(PROT,BRT)                                     00000230
+         DFHMDF POS=(2,55),LENGTH=1,ATTRB=(PROT,NORM)                   00000240
+         DFHMDF POS=(2,66),LENGTH=5,INITIAL='TIME:',ATTRB=(PROT,       *00000250
+               NORM)                                                    00000260
+* PNLTIME                                                               00000270
+DFH0003  DFHMDF POS=(2,72),LENGTH=8,INITIAL='________',                *00000280
+               ATTRB=(PROT,NORM)                                        00000290
+         DFHMDF POS=(3,1),LENGTH=1,ATTRB=(PROT,NORM)                    00000300
+         DFHMDF POS=(5,2),LENGTH=7,INITIAL=' OPTION',                  *00000310
+               ATTRB=(PROT,BRT)                                         00000320
+         DFHMDF POS=(5,10),LENGTH=12,INITIAL=' DESCRIPTION',           *00000330
+               ATTRB=(PROT,BRT)                                         00000340
+         DFHMDF POS=(5,23),LENGTH=1,ATTRB=(PROT,NORM)                   00000350
+         DFHMDF POS=(6,3),LENGTH=47,INITIAL='------  ------------------*00000360
+               ---------------------',ATTRB=(PROT,NORM)                 00000370
+         DFHMDF POS=(7,4),LENGTH=1,INITIAL='1',ATTRB=(PROT,            *00000380
+               NORM)                                                    00000390
+         DFHMDF POS=(7,11),LENGTH=26,INITIAL='DECISION TABLE MAINTENANC*00000400
+               E',ATTRB=(PROT,NORM)                                     00000410
+         DFHMDF POS=(8,4),LENGTH=1,INITIAL='2',ATTRB=(PROT,            *00000420
+               NORM)                                                    00000430
+         DFHMDF POS=(8,11),LENGTH=28,INITIAL='AUTO TRANSACTION MAINTENA*00000440
+               NCE',ATTRB=(PROT,NORM)                                   00000450
+         DFHMDF POS=(9,4),LENGTH=1,INITIAL='3',ATTRB=(PROT,            *00000460
+               NORM)                                                    00000470
+         DFHMDF POS=(9,11),LENGTH=28,INITIAL='HOLD TRANSACTION MAINTENA*00000480
+               NCE',ATTRB=(PROT,NORM)                                   00000490
+         DFHMDF POS=(10,4),LENGTH=1,INITIAL='4',ATTRB=(PROT,           *00000500
+               NORM)                                                    00000510
+         DFHMDF POS=(10,11),LENGTH=18,INITIAL='SPAN CODES INQUIRY',    *00000520
+               ATTRB=(PROT,NORM)                                        00000530
+         DFHMDF POS=(11,4),LENGTH=1,INITIAL='5',ATTRB=(PROT,           *00000540
+               NORM)                                                    00000550
+         DFHMDF POS=(11,11),LENGTH=16,INITIAL='CUSTOMER INQUIRY',      *00000560
+               ATTRB=(PROT,NORM)                                        00000570
+         DFHMDF POS=(13,3),LENGTH=22,INITIAL='CUSTOMER OR SPAN CODE:', *00000580
+               ATTRB=(PROT,NORM)                                        00000590
+* SPANCUST                                                              00000600
+DFH0004  DFHMDF POS=(13,26),LENGTH=9,INITIAL='_________',              *00000610
+               ATTRB=(UNPROT,NORM)                                      00000620
+         DFHMDF POS=(13,36),LENGTH=1,ATTRB=(ASKIP,NORM)                 00000630
+         DFHMDF POS=(15,3),LENGTH=11,INITIAL='START DATE:',            *00000640
+               ATTRB=(PROT,NORM)                                        00000650
+* SDATE                                                                 00000660
+DFH0005  DFHMDF POS=(15,15),LENGTH=8,INITIAL='________',               *00000670
+               ATTRB=(UNPROT,NORM)                                      00000680
+         DFHMDF POS=(15,24),LENGTH=1,ATTRB=(ASKIP,NORM)                 00000690
+         DFHMDF POS=(16,3),LENGTH=11,INITIAL='END   DATE:',            *00000700
+               ATTRB=(PROT,NORM)                                        00000710
+* EDATE                                                                 00000720
+DFH0006  DFHMDF POS=(16,15),LENGTH=8,INITIAL='________',               *00000730
+               ATTRB=(UNPROT,NORM)                                      00000740
+         DFHMDF POS=(16,24),LENGTH=1,ATTRB=(ASKIP,NORM)                 00000750
+         DFHMDF POS=(19,3),LENGTH=12,INITIAL='ENTER OPTION',           *00000760
+               ATTRB=(PROT,NORM)                                        00000770
+* OPTION                                                                00000780
+DFH0007  DFHMDF POS=(19,16),LENGTH=1,INITIAL='_',ATTRB=(UNPROT,        *00000790
+               NORM)                                                    00000800
+         DFHMDF POS=(19,18),LENGTH=1,ATTRB=(ASKIP,NORM)                 00000810
+         DFHMDF POS=(22,2),LENGTH=11,INITIAL=' PF3 = EXIT',            *00000820
+               ATTRB=(PROT,BRT)                                         00000830
+* MESSAGE                                                               00000840
+DFH0008  DFHMDF POS=(24,1),LENGTH=79,ATTRB=(PROT,BRT)                   00000850
+         DFHMSD TYPE=FINAL                                              00000860
+         END                                                            00000870

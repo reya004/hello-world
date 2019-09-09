@@ -1,0 +1,145 @@
+      *---------------------------------------------------------------*
+       6250-READ-PARM-FILE.
+      *---------------------------------------------------------------*
+           READ PARM-FILE.
+           MOVE CC-PARM-FILE TO CC-STATUS.
+           IF  CC-STATUS = CC-OK
+               ADD 1 TO AC-PARM-REC
+               DISPLAY 'PARM-REC: ' PARM-REC
+           ELSE
+               IF CC-STATUS = CC-EOF
+                   CONTINUE
+               ELSE
+                   MOVE '6250-READ-PARM-FILE' TO ABORT-PARAGRAPH
+                   MOVE 'SEQ FILE READ ERROR' TO ABORT-MESSAGE
+                   MOVE 'PARM-FILE'           TO ABORT-DATABASE
+                   MOVE +0                    TO ABORT-SQLCODE          00001360
+                   MOVE CC-STATUS             TO ABORT-FILE-STATUS      00001360
+                   MOVE PARM-REC              TO ABORT-KEY              00001360
+                   GO TO 9999-ABORT
+      ***          >-------------->>
+               END-IF
+           END-IF.
+       6250-EXIT. EXIT.
+       EJECT                                                            00003691
+      ***
+      **
+      *---------------------------------------------------------------*
+       9000-TESTCASE-STATISTICS.
+      *---------------------------------------------------------------*
+
+           DISPLAY SPACE.
+           DISPLAY ALL-DASH.
+           DISPLAY AC-PARM-DISPLAY.
+           DISPLAY AC-INI-DISPLAY.
+           DISPLAY AC-TRN-DISPLAY.
+           MOVE ZERO TO AC-INI-REC
+                        AC-PARM-REC
+                        AC-TRN-REC.
+
+       9000-EXIT. EXIT.
+       EJECT                                                            00003691
+      ***
+      **
+      *---------------------------------------------------------------*
+       9999-ABORT.
+      *---------------------------------------------------------------*
+      * 1. SET PROGRAM STATUS FLAG TO 'F' (FATAL ERROR).                00003694
+      * 2. DISPLAY PLAN, PROGRAM, PARAGRAPH, AND DATABASE.              00003695
+      * 3. DISPLAY ERROR RELATED INFORMATION IN SQLCA OR FILE STATUS.   00003696
+      * 4. DISPLAY DB2 KEY OR PROBLEM RECORD#.                          00003696
+      * 5. EXPAND SQL ERROR MESSAGE WITH DSNTIAR, & THEN DISPLAY.       00003697
+      * 6. ABORT THE PROGRAM.                                           00003697
+      *---------------------------------------------------------------*
+
+           PERFORM 9000-TESTCASE-STATISTICS THRU 9000-EXIT.
+
+           DISPLAY SPACE.                                               00003710
+           DISPLAY 'PROGRAM ' ABORT-PROGRAM ' ABORTED'.                 00003720
+           DISPLAY ABORT-MESSAGE.                                       00003740
+           DISPLAY 'ABORT PARAGRAPH:      ' ABORT-PARAGRAPH.            00003740
+           DISPLAY 'ABORT DATABASE:       ' ABORT-DATABASE.             00003750
+           DISPLAY 'ABORT SQLCODE:        ' ABORT-SQLCODE.              00003770
+           DISPLAY 'ABORT FILE STATUS     ' ABORT-FILE-STATUS.          00003770
+           DISPLAY 'ABORT KEY:            ' ABORT-KEY.                  00003780
+           DISPLAY SPACE.                                               00003790
+           DISPLAY SPACE.                                               00003790
+                                                                        00003791
+           IF  SQLCODE = +0                                             00003792
+      ***      SAY YOUR PRAYERS ....  BANG! BANG! BANG!                 00003840
+               CALL 'ABORT'                                             00003793
+           END-IF.                                                      00003797
+      ***                                                               00003840
+      **** DISPLAY THE CONTENTS OF SQL COMMUNICATIONS AREA              00003850
+      ***                                                               00003860
+           MOVE 'F' TO STATUS-FLAG.                                     00003795
+                                                                        00003880
+           DISPLAY SPACE.                                               00003890
+           DISPLAY '*-----------------------------------------------*'. 00003891
+           DISPLAY '*                    SQLCA                      *'. 00003892
+           DISPLAY '*-----------------------------------------------*'. 00003893
+           MOVE SQLCAID      TO   DB2-DS-SQLCAID.                       00003894
+           MOVE SQLCABC      TO   DB2-DS-SQLCABC.                       00003895
+           MOVE SQLCODE      TO   DB2-DS-SQLCODE.                       00003896
+           MOVE SQLERRML     TO   DB2-DS-SQLERRML.                      00003897
+           MOVE SQLERRMC     TO   DB2-DS-SQLERRMC.                      00003898
+           MOVE SQLERRP      TO   DB2-DS-SQLERRP.                       00003899
+           MOVE SQLERRD(1)   TO   DB2-DS-SQLERRD1.                      00003900
+           MOVE SQLERRD(2)   TO   DB2-DS-SQLERRD2.                      00003910
+           MOVE SQLERRD(3)   TO   DB2-DS-SQLERRD3.                      00003920
+           MOVE SQLERRD(4)   TO   DB2-DS-SQLERRD4.                      00003930
+           MOVE SQLERRD(5)   TO   DB2-DS-SQLERRD5.                      00003940
+           MOVE SQLERRD(6)   TO   DB2-DS-SQLERRD6.                      00003950
+           MOVE SQLWARN0     TO   DB2-DS-SQLWARN0.                      00003960
+           MOVE SQLWARN1     TO   DB2-DS-SQLWARN1.                      00003970
+           MOVE SQLWARN2     TO   DB2-DS-SQLWARN2.                      00003980
+           MOVE SQLWARN3     TO   DB2-DS-SQLWARN3.                      00003990
+           MOVE SQLWARN4     TO   DB2-DS-SQLWARN4.                      00003991
+           MOVE SQLWARN5     TO   DB2-DS-SQLWARN5.                      00003992
+           MOVE SQLWARN6     TO   DB2-DS-SQLWARN6.                      00003993
+           MOVE SQLWARN7     TO   DB2-DS-SQLWARN7.                      00003994
+           MOVE SQLEXT       TO   DB2-DS-SQLEXT.                        00003995
+                                                                        00003996
+           DISPLAY  'SQLCAID  = ' DB2-DS-SQLCAID.                       00003997
+           DISPLAY  'SQLCABC  = ' DB2-DS-SQLCABC.                       00003998
+           DISPLAY  'SQLCODE  = ' DB2-DS-SQLCODE.                       00003999
+           DISPLAY  'SQLERRML = ' DB2-DS-SQLERRML.                      00004000
+           DISPLAY  'SQLERRMC = ' DB2-DS-SQLERRMC.                      00004010
+           DISPLAY  'SQLERRP  = ' DB2-DS-SQLERRP.                       00004020
+           DISPLAY  'SQLERRD1 = ' DB2-DS-SQLERRD1.                      00004030
+           DISPLAY  'SQLERRD2 = ' DB2-DS-SQLERRD2.                      00004040
+           DISPLAY  'SQLERRD3 = ' DB2-DS-SQLERRD3.                      00004050
+           DISPLAY  'SQLERRD4 = ' DB2-DS-SQLERRD4.                      00004060
+           DISPLAY  'SQLERRD5 = ' DB2-DS-SQLERRD5.                      00004070
+           DISPLAY  'SQLERRD6 = ' DB2-DS-SQLERRD6.                      00004080
+           DISPLAY  'SQLWARN0 = ' DB2-DS-SQLWARN0.                      00004090
+           DISPLAY  'SQLWARN1 = ' DB2-DS-SQLWARN1.                      00004091
+           DISPLAY  'SQLWARN2 = ' DB2-DS-SQLWARN2.                      00004092
+           DISPLAY  'SQLWARN3 = ' DB2-DS-SQLWARN3.                      00004093
+           DISPLAY  'SQLWARN4 = ' DB2-DS-SQLWARN4.                      00004094
+           DISPLAY  'SQLWARN5 = ' DB2-DS-SQLWARN5.                      00004095
+           DISPLAY  'SQLWARN6 = ' DB2-DS-SQLWARN6.                      00004096
+           DISPLAY  'SQLWARN7 = ' DB2-DS-SQLWARN7.                      00004097
+           DISPLAY  'SQLEXT   = ' DB2-DS-SQLEXT.                        00004098
+      ***                                                               00004110
+      **** DISPLAY ERROR MESSAGES AND DIAGNOSTICS                       00004120
+      ***                                                               00004130
+           CALL 'DSNTIAR'  USING SQLCA                                  00004150
+                                 DB2-ERROR-MESSAGE                      00004160
+                                 DB2-ERROR-TEXT-LEN.                    00004170
+           DISPLAY SPACE.                                               00004190
+           DISPLAY '*-----------------------------------------------*'. 00004191
+           DISPLAY '*                   DSNTIAR                     *'. 00004192
+           DISPLAY '*-----------------------------------------------*'. 00004193
+           DISPLAY DB2-ERROR-TEXT(1).                                   00004194
+           DISPLAY DB2-ERROR-TEXT(2).                                   00004195
+           DISPLAY DB2-ERROR-TEXT(3).                                   00004196
+           DISPLAY DB2-ERROR-TEXT(4).                                   00004197
+           DISPLAY DB2-ERROR-TEXT(5).                                   00004198
+           DISPLAY DB2-ERROR-TEXT(6).                                   00004199
+           DISPLAY DB2-ERROR-TEXT(7).                                   00004200
+           DISPLAY DB2-ERROR-TEXT(8).                                   00004210
+           DISPLAY SPACE.                                               00004220
+                                                                        00004230
+           CALL 'ABORT'.                                                00003793
+      ***  ASTA LA VISTA BABY ....  BANG! BANG! BANG!                   00003840

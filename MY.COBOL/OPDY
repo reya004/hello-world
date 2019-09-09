@@ -1,0 +1,65 @@
+      *** OPPE6R TABLE USAGE
+      ***
+      *** TABLE   RD INS UPD DEL DESC
+      *** WMBIT11A S             PRO HDR
+      *** WMCUT02A S             CUSTOMER
+      *** WMFMT10A S             FASTPATH
+      *** WMFMT11A S             FLOW
+      *** WMFMT24A S             MESSAGE
+      *** WMFMT27A S             GP
+      *** WMFMT36A S             TML
+      *** WMFMT41A S             SECURITY
+      *** WMFMT48A S             COUNTRY/ZIP/TML/GRID/ADDTL MILES
+      *** WMOPT12A S I   U   D   CHECKING MANIFEST (CMAN) - LH AND NEW
+      ***                        MANIFEST CREATED AT RTN.
+      *** WMOPT14A S I   U   D   DELIVERY MANIFEST (DMAN) - P & D OUT
+      *** WMOPT22A S             LOADPLAN
+      *** WMOPT51A S             COMPANY EQUIP INVENTORY/DESC
+      *** WMOPT52A   I           PRO EVENT HIST
+      *** WMOPT66A S     U       EQUIP CURR STATUS
+      *** WMOPT68A S I       D   EQUIP HIST STATUS
+      *** WMOPT77A S     U       PRO EVENT CURR
+      *** WMOPT84A   I           TRAN EXTRACT
+
+TO BUILD A COMMARE FOR THIS PROGRAM THE FOLLOWING SHOULD BE POPULATED:
+
+- INITIALIZE LKCMAREA     *
+- SCA-CURRENT-PROGRAM     *
+- SCA-PRINTER             ?
+- SCA-CURRENT-DATE        *
+- SCA-CURRENT-TIME        *
+- SCA-CURRENT-DATE-DISP   *
+- SCA-OPERATOR-TERMLOC    *
+- SCA-PRINTER-QUEUE       ?
+- SCA-FLOW-PREV-PROGRAM-1 *  INDICATES THE PRIOR PROGRAM
+- SCA-ENVID               *  SET TO "A"/"D"/"P" DEPENDING ON
+                             ENVIRONMENT.
+- SCA-PROFILE             ?  MAY BE USED TO AFFECT PROGRAM RIGHTS
+                             BASED ON SECURITY - THIS FIELD
+                             IDENTIFIES TYPE OF USER.
+
+- SCA-SEC-NXTACCI            FAST PATH PROGRAM INQUIRY RIGHTS "Y"/"N"
+- SCA-SEC-SRACCU             SECURITY UPDATE ACCESS "Y" / "N"
+- SCA-SEC-LVL-ALL            SECURITY STUFF
+- SCA-SEC-LVL-TRM            SECURITY STUFF
+- SCA-SEC-LOC                SECURITY STUFF
+- SCA-SEC-LVL-REG            SECURITY STUFF
+- SCA-SEC-CURREGION          SECURITY STUFF
+
+
+- TFMSACA-CMPNY           * COMPANY NBR - "0" IS WML
+- TFMSACA-OPER-TRMID      *
+- TFMSACA-PREV-PFKEY
+- TFMSACA-SCRPRNT
+- TFMSACA-LOC-CD(1 THRU 4)
+- TFMSACA-DMICL
+- TFMSACA- ...              LOTS OF SAVED DRIVER INFO.
+- TFMSACA-STACK-ENTRY-1
+
+- TFMSACA-UNIT              FROM E6L
+- TFMSACA-MFST              FROM E6L
+- TFMSACA-DEST              FROM E6L
+- TFMSACA-ORIG              FROM E6L
+- TFMSACA-STATUS            FROM E6L
+
+

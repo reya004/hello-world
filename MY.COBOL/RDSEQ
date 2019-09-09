@@ -1,0 +1,18 @@
+      *---------------------------------------------------------------*
+      * READ SEQUENTIAL FILE
+      *---------------------------------------------------------------*
+       400-READ.
+           READ FILENAME.
+           MOVE CC-FILENAME TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               ADD 1 TO AC-FILENAME
+           ELSE
+               IF CC-STATUS = CC-EOF
+                   GO TO 400-READ-EXIT
+               ELSE
+                   DISPLAY 'ERROR,READ,FILENAME,CC: ' CC-STATUS
+                   PERFORM 999-CANCEL THRU
+                           999-CANCEL-EXIT
+               END-IF
+           END-IF.
+       400-READ-EXIT. EXIT.

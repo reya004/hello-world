@@ -1,0 +1,561 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. XRBDB2.
+       AUTHOR. TONY REY.
+       INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+       DATE-WRITTEN. 05/30/96.
+       DATE-COMPILED.
+      *================================================================*
+      * PROGRAM NARRATIVE
+      *================================================================*
+      * PRODUCE DB2 CROSS REFERANCE FILE
+      *================================================================*
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-370.
+       OBJECT-COMPUTER.  IBM-370.
+       SPECIAL-NAMES. C01 IS TOP-OF-PAGE.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-FILE            ASSIGN TO UT-S-INFILE
+                                     FILE STATUS IS IN-CC.
+           SELECT XREF-FILE          ASSIGN TO UT-S-XREF
+                                     FILE STATUS IS XREF-CC.
+           SELECT PRINT-FILE         ASSIGN TO UT-S-PRINT.
+       DATA DIVISION.
+       FILE SECTION.
+      *---------------------------------------------------------------*
+       FD  IN-FILE
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  IN-REC              PIC X(81).
+       01  IN-REC-R.
+           05  FILLER          PIC X(01).
+           05  IN-SL-SL        PIC X(02).
+           05  IN-LINE.
+               10 IN-ASTER     PIC X(01).
+               10 FILLER       PIC X(69).
+           05  IN-LINE-POS     REDEFINES IN-LINE
+                               OCCURS 70 TIMES
+                               PIC X(01).
+           05  IN-SEQ          PIC X(08).
+      *---------------------------------------------------------------*
+       FD  XREF-FILE
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  X-REC.
+           05 X-PROC             PIC X(08).
+           05 FILLER             PIC X(01).
+           05 X-STEP             PIC X(08).
+           05 FILLER             PIC X(01).
+           05 X-PGM              PIC X(08).
+           05 FILLER             PIC X(01).
+           05 X-DDNAME           PIC X(08).
+           05 FILLER             PIC X(01).
+           05 X-DSN-OR-SYSOUT    PIC X(50).
+           05 FILLER             PIC X(01).
+           05 X-COMMENT          PIC X(70).
+      *---------------------------------------------------------------*
+       FD  PRINT-FILE
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  PRINT-REC          PIC X(133).
+       EJECT
+      *===============================================================*
+       WORKING-STORAGE SECTION.
+      *===============================================================*
+       77  IN-CC                 PIC XX VALUE SPACES.
+       77  XREF-CC               PIC XX VALUE SPACES.
+       COPY CCFILE.
+      *---------------------------------------------------------------*
+       77  SW-PROCESS-SYMBOLIC   PIC X  VALUE 'N'.
+       77  SW-EXEC-NAKED-Y-N     PIC X(1)         VALUE 'N'.
+      *---------------------------------------------------------------*
+       77  AC-LEFT-PAREN         PIC 99           VALUE ZERO.
+       77  AC-RIGHT-PAREN        PIC 99           VALUE ZERO.
+       77  AC-LEFT-QUOTE         PIC 99           VALUE ZERO.
+       77  AC-RIGHT-QUOTE        PIC 99           VALUE ZERO.
+       01  AC-RECORDS.
+           05  FILLER            PIC X(20)        VALUE
+               'IN RECORDS: '.
+           05  AC-IN             PIC 9(7)         VALUE ZERO.
+           05  FILLER            PIC X(02)        VALUE SPACES.
+           05  FILLER            PIC X(20)        VALUE
+               'XREF RECORDS: '.
+           05  AC-XREF           PIC 9(7)         VALUE ZERO.
+      *---------------------------------------------------------------*
+       01  POS-TALLY.
+           05  POS-SPACES        PIC 9(03)        VALUE ZERO.
+           05  POS-PROC          PIC 9(03)        VALUE ZERO.
+           05  POS-EXEC          PIC 9(03)        VALUE ZERO.
+           05  POS-PGM           PIC 9(03)        VALUE ZERO.
+           05  POS-DD            PIC 9(03)        VALUE ZERO.
+           05  POS-DSN           PIC 9(03)        VALUE ZERO.
+           05  POS-SYSOUT        PIC 9(03)        VALUE ZERO.
+           05  POS-COMMENT       PIC 9(03)        VALUE ZERO.
+      *---------------------------------------------------------------*
+      * OUT TABLE WORK
+      *---------------------------------------------------------------*
+       01  OUT-TBL.
+           05  FILLER          PIC X(03).
+           05  OUT-LINE        PIC X(70).
+           05  OUT-LINE-POS    REDEFINES OUT-LINE
+                               OCCURS 70 TIMES
+                               PIC X(01).
+           05  OUT-SEQ         PIC X(08).
+      ***
+       77  OUT-IDX             PIC 999 VALUE ZERO.
+       77  OUT-IDX-MAX         PIC 999 VALUE 70.
+      ***
+       77  IN-IDX              PIC 999 VALUE ZERO.
+       77  IN-IDX2             PIC 999 VALUE ZERO.
+       77  IN-IDX-MAX          PIC 999 VALUE 70.
+      ***
+       77  FH-IN-IDX-GET-XXX   PIC 999 VALUE ZERO.
+      *---------------------------------------------------------------*
+      * COMPARE TABLE WORK
+      *---------------------------------------------------------------*
+       01  COMPARE-TBL.
+           05  COMPARE-ITEM    PIC X(70).
+           05  COMPARE-POS     REDEFINES COMPARE-ITEM
+                               OCCURS 70 TIMES
+                               PIC X(01).
+      ***
+       77  COMPARE-LEN         PIC 99 VALUE ZERO.
+       77  COMPARE-IDX         PIC 999 VALUE ZERO.
+       77  COMPARE-IDX-MAX     PIC 999 VALUE 70.
+      ***
+       77  MATCH-IDX           PIC 999 VALUE ZERO.
+      *---------------------------------------------------------------*
+       01  AC-LINE               PIC 9(03)        VALUE 99.
+      ***
+       01  HL.
+           05  FILLER            PIC X(01)        VALUE SPACES.
+           05  FILLER            PIC X(45)        VALUE SPACES.
+           05  FILLER            PIC X(40)        VALUE
+               'XRBDB2 CROSS REFERENCE'.
+           05  FILLER            PIC X(45)        VALUE SPACES.
+      ***
+       01  DL.
+           05  FILLER            PIC X(01)        VALUE SPACES.
+           05  DL-X              PIC X(132)       VALUE SPACES.
+      *---------------------------------------------------------------*
+       01  RH-X-REC.
+           05 RH-PROC            PIC X(08)        VALUE SPACES.
+           05 FILLER             PIC X(01)        VALUE SPACES.
+           05 RH-STEP            PIC X(08)        VALUE SPACES.
+           05 FILLER             PIC X(01)        VALUE SPACES.
+           05 RH-PGM             PIC X(08)        VALUE SPACES.
+           05 FILLER             PIC X(01)        VALUE SPACES.
+           05 RH-DDNAME          PIC X(08)        VALUE SPACES.
+           05 FILLER             PIC X(01)        VALUE SPACES.
+           05 RH-DSN-OR-SYSOUT   PIC X(50)        VALUE SPACES.
+           05 FILLER             PIC X(01)        VALUE SPACES.
+           05 RH-COMMENT         PIC X(70)        VALUE SPACES.
+       EJECT
+      *===============================================================*
+       PROCEDURE DIVISION.
+      *===============================================================*
+       MAIN-PROGRAM.
+       START-PROGRAM.
+           OPEN INPUT IN-FILE.
+           OPEN OUTPUT XREF-FILE
+                       PRINT-FILE.
+       MAIN-PROCESS.
+           PERFORM 100-PARSE THRU
+                   100-PARSE-EXIT.
+       FINISH-PROGRAM.
+           MOVE AC-RECORDS TO DL-X.
+           PERFORM 700-PRINT THRU
+                   700-PRINT-EXIT.
+           CLOSE IN-FILE
+                 XREF-FILE
+                 PRINT-FILE.
+           STOP RUN.
+      *---------------------------------------------------------------*
+       100-PARSE.
+       100-CURSOR.
+           EXEC SQL
+                DECLARE STMTS CURSOR FOR
+                SELECT A.NAME
+                     , A.STMT
+                     , A.STMTNO
+                     , A.SEQNO
+                     , A.VERSION
+                FROM SYSIBM.SYSPACKSTMT A
+                WHERE A.LOCATION = ' '
+                AND   A.COLLID   = 'PROD'
+                ORDER BY A.VERSION DESC, A.NAME, A.STMTNO, A.SEQNO
+           END-EXEC.
+       100-READ.
+           READ IN-FILE.
+           MOVE IN-CC TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               ADD 1 TO AC-IN
+           ELSE
+               IF CC-STATUS = CC-EOF
+                   GO TO 100-PARSE-EXIT
+               ELSE
+                   DISPLAY 'ERROR,READ,IN,CC: ' CC-STATUS
+                   PERFORM 999-CANCEL THRU
+                           999-CANCEL-EXIT.
+       100-SL.
+      ***  MAKE SURE ONLY VALID JCL STATEMENT IS PROCESSED *
+           IF IN-SL-SL = '//' AND
+              IN-ASTER NOT = '*'
+               NEXT SENTENCE
+           ELSE
+               GO TO 100-PARSE.
+       100-PROC.
+           MOVE ' PROC ' TO COMPARE-ITEM.
+           MOVE  6       TO COMPARE-LEN.
+           PERFORM 150-FIND THRU
+                   150-FIND-EXIT.
+           MOVE MATCH-IDX TO POS-PROC.
+           IF POS-PROC > 2 AND POS-PROC < 23
+      ***      EXEC NAKED PROCESS -
+      ***      WRITE AN XREF RECORD FOR A PRIOR EXEC PGM THAT HAD NO
+      ***      DSN/SYSOUT STATEMENTS (IE. SW-EXEC-NAKED-Y-N = 'Y') *
+               PERFORM 450-WRITE-XREF THRU
+                       450-WRITE-XREF-EXIT
+               MOVE 'N' TO SW-EXEC-NAKED-Y-N
+      ***      INIT PROCESS *
+               MOVE SPACES   TO RH-X-REC
+      ***      GET PROC NAME *
+               MOVE 1 TO IN-IDX
+               PERFORM 200-GET-MOVE THRU
+                       200-GET-MOVE-EXIT
+               MOVE OUT-LINE TO RH-PROC
+      ***      PROCESS ANY SYMBOLICS OR COMMENT *
+               MOVE 'Y'      TO SW-PROCESS-SYMBOLIC
+               COMPUTE IN-IDX, POS-COMMENT = POS-PROC + 6
+               PERFORM 225-COMMENT-OR-SYMBOLIC THRU
+                       225-COMMENT-OR-SYMBOLIC-EXIT
+      ***
+               PERFORM 500-WRITE-XREF THRU
+                       500-WRITE-XREF-EXIT
+               GO TO 100-PARSE
+           ELSE
+               NEXT SENTENCE.
+       100-EXEC-PGM.
+           MOVE ' EXEC ' TO COMPARE-ITEM.
+           MOVE  6       TO COMPARE-LEN.
+           PERFORM 150-FIND THRU
+                   150-FIND-EXIT.
+           MOVE MATCH-IDX TO POS-EXEC.
+      ***
+           MOVE ' PGM=' TO COMPARE-ITEM.
+           MOVE  5       TO COMPARE-LEN.
+           PERFORM 150-FIND THRU
+                   150-FIND-EXIT.
+           MOVE MATCH-IDX TO POS-PGM.
+      ***
+           IF (POS-EXEC > 2 AND POS-EXEC < 23) AND
+              (POS-PGM  > 7 AND POS-PGM  < 28)
+      ***      EXEC NAKED PROCESS -
+      ***      WRITE AN XREF RECORD FOR A PRIOR EXEC PGM THAT HAD NO
+      ***      DSN/SYSOUT STATEMENTS (IE. SW-EXEC-NAKED-Y-N = 'Y') *
+               PERFORM 450-WRITE-XREF THRU
+                       450-WRITE-XREF-EXIT
+               MOVE 'Y' TO SW-EXEC-NAKED-Y-N
+      ***      INIT PROCESS *
+               MOVE 'N'   TO SW-PROCESS-SYMBOLIC
+               MOVE SPACE TO RH-DDNAME
+               MOVE ZERO  TO POS-DD
+      ***      GET PROGRAM NAME *
+               COMPUTE IN-IDX = POS-PGM + 5
+               PERFORM 200-GET-MOVE THRU
+                       200-GET-MOVE-EXIT
+               MOVE OUT-LINE   TO RH-PGM
+      ***      GET PROC STEP *
+               MOVE 1 TO IN-IDX
+               PERFORM 200-GET-MOVE THRU
+                       200-GET-MOVE-EXIT
+               MOVE OUT-LINE TO RH-STEP
+               GO TO 100-PARSE
+           ELSE
+               NEXT SENTENCE.
+       100-PARSE-SYMBOLIC.
+           IF SW-PROCESS-SYMBOLIC = 'Y'
+      ***      THE FIRST EXEC PGM STATEMENT HAS NOT BEEN ENCOUNTERED *
+               MOVE ZERO TO POS-SPACES
+               INSPECT IN-LINE TALLYING POS-SPACES FOR LEADING SPACE
+               COMPUTE IN-IDX = POS-SPACES + 1
+               PERFORM 250-GET-COMMENT THRU
+                       250-GET-COMMENT-EXIT
+               MOVE OUT-LINE TO RH-COMMENT
+               PERFORM 500-WRITE-XREF THRU
+                       500-WRITE-XREF-EXIT
+               GO TO 100-PARSE
+           ELSE
+               NEXT SENTENCE.
+       100-DDNAME.
+           IF IN-SL-SL = '//' AND
+              IN-ASTER NOT = SPACE
+               MOVE 1 TO IN-IDX
+               PERFORM 200-GET-MOVE THRU
+                       200-GET-MOVE-EXIT
+               MOVE OUT-LINE TO RH-DDNAME
+      **       THERE MUST BE A ' DD ' IN THIS STATEMENT *
+               MOVE ' DD ' TO COMPARE-ITEM
+               MOVE  4     TO COMPARE-LEN
+               PERFORM 150-FIND THRU
+                       150-FIND-EXIT
+               MOVE MATCH-IDX TO POS-DD
+           ELSE
+               NEXT SENTENCE.
+       100-DD.
+           IF POS-DD > ZERO
+      ***      CONTINUE PROCESS FOR VALID DD'S ONLY *
+               NEXT SENTENCE
+           ELSE
+               GO TO 100-PARSE.
+       100-INIT-DSN-OR-SYSOUT.
+       100-INIT-COMMENT.
+           MOVE SPACE TO RH-DSN-OR-SYSOUT
+                         RH-COMMENT.
+       100-DSN.
+           MOVE ' DSN=' TO COMPARE-ITEM.
+           MOVE  5      TO COMPARE-LEN.
+           PERFORM 150-FIND THRU
+                   150-FIND-EXIT.
+           MOVE MATCH-IDX TO POS-DSN.
+           IF POS-DSN > 2 AND
+              POS-DSN < 45
+               COMPUTE IN-IDX = POS-DSN + 5
+               PERFORM 200-GET-MOVE THRU
+                       200-GET-MOVE-EXIT
+               MOVE OUT-LINE TO RH-DSN-OR-SYSOUT
+      ***
+               MOVE SPACE              TO COMPARE-ITEM
+               MOVE  1                 TO COMPARE-LEN
+               MOVE  FH-IN-IDX-GET-XXX TO IN-IDX
+               PERFORM 150-FIND-EP2 THRU
+                       150-FIND-EXIT
+               MOVE MATCH-IDX TO POS-COMMENT
+                                 IN-IDX
+               PERFORM 225-COMMENT-OR-SYMBOLIC THRU
+                       225-COMMENT-OR-SYMBOLIC-EXIT
+      ***
+               MOVE 'N' TO  SW-EXEC-NAKED-Y-N
+               PERFORM 500-WRITE-XREF THRU
+                       500-WRITE-XREF-EXIT
+           ELSE
+               NEXT SENTENCE.
+       100-SYSOUT.
+           MOVE ' SYSOUT=' TO COMPARE-ITEM.
+           MOVE  8         TO COMPARE-LEN.
+           PERFORM 150-FIND THRU
+                   150-FIND-EXIT.
+           COMPUTE POS-SYSOUT = MATCH-IDX + 1.
+      ***
+           IF POS-SYSOUT > 5 AND
+              POS-SYSOUT < 48
+               MOVE POS-SYSOUT TO IN-IDX
+               PERFORM 200-GET-MOVE THRU
+                       200-GET-MOVE-EXIT
+               MOVE OUT-LINE           TO RH-DSN-OR-SYSOUT
+      ***
+               MOVE SPACE              TO COMPARE-ITEM
+               MOVE  1                 TO COMPARE-LEN
+               MOVE  FH-IN-IDX-GET-XXX TO IN-IDX
+               PERFORM 150-FIND-EP2 THRU
+                       150-FIND-EXIT
+               MOVE MATCH-IDX TO POS-COMMENT
+                                 IN-IDX
+               PERFORM 225-COMMENT-OR-SYMBOLIC THRU
+                       225-COMMENT-OR-SYMBOLIC-EXIT
+      ***
+               MOVE 'N' TO  SW-EXEC-NAKED-Y-N
+               PERFORM 500-WRITE-XREF THRU
+                       500-WRITE-XREF-EXIT
+           ELSE
+               NEXT SENTENCE.
+       100-REITERATE.
+           GO TO 100-PARSE.
+       100-PARSE-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * FIND COMPARE-ITEM WITHIN IN-LINE. IF MATCH, MATCH-IDX WILL
+      * POINT TO STARTING POSITION OF COMPARE-ITEM WITHIN IN-LINE.
+      *
+      * ENTRY POINTS TO THIS ROUTINE ARE 150-FIND, AND 150-FIND-EP2.
+      * IF A STARTING LOCATION IS KNOWN, THE '150-FIND-EP2' ENTRY
+      * IS USED.
+      *---------------------------------------------------------------*
+       150-FIND.
+           MOVE 1    TO IN-IDX.
+       150-FIND-EP2.
+           MOVE ZERO TO MATCH-IDX.
+       150-LOOP.
+           IF IN-LINE-POS (IN-IDX) = COMPARE-POS (1)
+               PERFORM 175-FIND THRU
+                       175-FIND-EXIT
+               IF MATCH-IDX > ZERO
+      ***          WE HAD A MATCH - EXIT *
+                   GO TO 150-FIND-EXIT
+               ELSE
+                   NEXT SENTENCE
+           ELSE
+               NEXT SENTENCE.
+       150-REITERATE.
+           COMPUTE IN-IDX = IN-IDX + 1
+           IF IN-IDX > IN-IDX-MAX
+               NEXT SENTENCE
+           ELSE
+               GO TO 150-LOOP.
+       150-FIND-EXIT. EXIT.
+      *- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*
+       175-FIND.
+       175-FIND-LEN-EQ-1.
+           IF COMPARE-LEN = 1
+      ***      WE HAVE A MATCH - LET'S MARK POSITION *
+               MOVE IN-IDX TO MATCH-IDX
+               GO TO 175-FIND-EXIT
+           ELSE
+               NEXT SENTENCE.
+       175-FIND-LEN-GT-1.
+           COMPUTE IN-IDX2 = IN-IDX + 1.
+           MOVE 2 TO COMPARE-IDX.
+       175-LOOP.
+           IF IN-LINE-POS (IN-IDX2) = COMPARE-POS (COMPARE-IDX)
+               IF COMPARE-IDX = COMPARE-LEN
+      ***          WE HAVE A MATCH - LET'S MARK POSITION *
+                   MOVE IN-IDX TO MATCH-IDX
+                   GO TO 175-FIND-EXIT
+               ELSE
+                   COMPUTE IN-IDX2     = IN-IDX2 + 1
+                   COMPUTE COMPARE-IDX = COMPARE-IDX + 1
+                   IF IN-IDX2 > IN-IDX-MAX
+                       NEXT SENTENCE
+                   ELSE
+                       GO TO 175-LOOP
+           ELSE
+               NEXT SENTENCE.
+       175-FIND-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * GET AND MOVE AN ITEM
+      *---------------------------------------------------------------*
+       200-GET-MOVE.
+           MOVE 1      TO OUT-IDX.
+           MOVE SPACES TO OUT-LINE.
+           MOVE ZERO   TO AC-LEFT-PAREN
+                          AC-RIGHT-PAREN.
+           MOVE IN-IDX TO FH-IN-IDX-GET-XXX.
+       200-LOOP.
+       200-CHECK-IF-DONE.
+           IF IN-IDX > IN-IDX-MAX
+               GO TO 200-GET-MOVE-EXIT
+           ELSE
+               IF IN-LINE-POS(IN-IDX) = ' '
+                   GO TO 200-GET-MOVE-EXIT
+               ELSE
+                   IF IN-LINE-POS(IN-IDX) = ',' AND
+                      AC-LEFT-PAREN       = AC-RIGHT-PAREN
+                       GO TO 200-GET-MOVE-EXIT
+                   ELSE
+                       NEXT SENTENCE.
+       200-MOVE.
+           MOVE IN-LINE-POS (IN-IDX) TO OUT-LINE-POS (OUT-IDX).
+           MOVE IN-IDX               TO FH-IN-IDX-GET-XXX.
+           IF IN-LINE-POS (IN-IDX) = '('
+               COMPUTE AC-LEFT-PAREN = AC-LEFT-PAREN + 1
+           ELSE
+               IF IN-LINE-POS (IN-IDX) = ')'
+                   COMPUTE AC-RIGHT-PAREN = AC-RIGHT-PAREN + 1
+               ELSE
+                   NEXT SENTENCE.
+       200-INCREMENT.
+           ADD 1 TO IN-IDX
+                    OUT-IDX.
+       200-REITERATE.
+           GO TO 200-LOOP.
+       200-GET-MOVE-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * FIND COMMENT OR SYMBOLIC AND MOVE TO RH-COMMENT
+      * (LEADING BLANKS ARE STRIPPED OFF).
+      *
+      * NOTE: UPON ENTRY IN-IDX AND POS-COMMENT POINT TO THE START
+      * OF THE COMMENT/SYMBOLIC FIELD.  EXAMPLE:
+      *
+      *  DSN=SAMPLE,DISP=SHR    DUMB COMMENT
+      *                     |
+      *                     +--> IN-IDX AND POS-COMMENT
+      *---------------------------------------------------------------*
+       225-COMMENT-OR-SYMBOLIC.
+      ***  GET COMMENT OR SYMBOLICS *
+           PERFORM 250-GET-COMMENT THRU
+                   250-GET-COMMENT-EXIT.
+           MOVE OUT-LINE TO RH-COMMENT.
+      ***  ELIMINATE LEADING SPACES FROM COMMENT *
+           MOVE ZERO     TO POS-SPACES.
+           INSPECT RH-COMMENT TALLYING POS-SPACES FOR LEADING SPACE.
+           COMPUTE IN-IDX = POS-COMMENT + POS-SPACES.
+           IF IN-IDX > IN-IDX-MAX
+               MOVE SPACES TO RH-COMMENT
+           ELSE
+               PERFORM 250-GET-COMMENT THRU
+                       250-GET-COMMENT-EXIT
+               MOVE OUT-LINE TO RH-COMMENT.
+       225-COMMENT-OR-SYMBOLIC-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * GET A COMMENT
+      *---------------------------------------------------------------*
+       250-GET-COMMENT.
+           MOVE 1      TO OUT-IDX.
+           MOVE SPACES TO OUT-LINE.
+           MOVE IN-IDX TO FH-IN-IDX-GET-XXX.
+       250-MOVE.
+           IF IN-IDX > IN-IDX-MAX
+               GO TO 250-GET-COMMENT-EXIT
+           ELSE
+               MOVE IN-LINE-POS (IN-IDX) TO OUT-LINE-POS (OUT-IDX)
+               MOVE IN-IDX               TO FH-IN-IDX-GET-XXX.
+       250-INCREMENT.
+           ADD 1 TO IN-IDX
+                    OUT-IDX.
+       250-REITERATE.
+           GO TO 250-MOVE.
+       250-GET-COMMENT-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * WRITE CROSS REFERENCE FOR AN EXEC PGM WITH NO DSN/SYSOUT STMTS
+      *---------------------------------------------------------------*
+       450-WRITE-XREF.
+           IF SW-EXEC-NAKED-Y-N = 'Y'
+               PERFORM 500-WRITE-XREF THRU
+                       500-WRITE-XREF-EXIT
+           ELSE
+               NEXT SENTENCE.
+       450-WRITE-XREF-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * WRITE CROSS REFERENCE FILE (XREF)
+      *---------------------------------------------------------------*
+       500-WRITE-XREF.
+           MOVE RH-X-REC TO X-REC.
+           WRITE X-REC.
+           MOVE XREF-CC TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               ADD 1 TO AC-XREF
+           ELSE
+               DISPLAY 'ERROR,WRITE,XREF,CC: ' CC-STATUS
+               PERFORM 999-CANCEL THRU
+                       999-CANCEL-EXIT.
+       500-WRITE-XREF-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * PRINT REPORT
+      *---------------------------------------------------------------*
+       700-PRINT.
+           ADD 1 TO AC-LINE.
+           IF AC-LINE > 60
+               WRITE PRINT-REC FROM HL AFTER ADVANCING TOP-OF-PAGE
+               WRITE PRINT-REC FROM DL AFTER ADVANCING 2 LINES
+               MOVE 3 TO AC-LINE
+           ELSE
+               WRITE PRINT-REC FROM DL.
+       700-PRINT-EXIT. EXIT.
+      *---------------------------------------------------------------*
+      * CANCEL ROUTINE
+      *---------------------------------------------------------------*
+       999-CANCEL.
+           DISPLAY 'XRB0004,ABNORMAL END * * * * * * * *'.
+           MOVE +16 TO RETURN-CODE.
+           STOP RUN.
+       999-CANCEL-EXIT. EXIT.

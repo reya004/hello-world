@@ -1,0 +1,13 @@
+      ***
+           MOVE XXXXXX TO FILENAME-REC.
+           WRITE FILENAME-REC.
+           REWRITE FILENAME-REC.
+           MOVE FILENAME-CC TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               NEXT SENTENCE
+           ELSE
+               DISPLAY 'ERROR,WRITE,FILENAME,CC: ' CC-STATUS
+               DISPLAY 'ERROR,REWRITE,FILENAME,CC: ' CC-STATUS
+               PERFORM 999-CANCEL THRU
+                       999-CANCEL-EXIT.
+      ***

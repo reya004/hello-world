@@ -1,0 +1,16 @@
+TRXXXX 01  WS-EXEC-DATA.
+TRXXXX     05  WS-EXEC-...                  PIC X(XX)   VALUE SPACES.
+TRXXXX     05  WS-EXEC-...                  PIC X(XX)   VALUE SPACES.
+TRXXXX EJECT
+TRXXXX*================================================================*
+TRXXXX LINKAGE SECTION.
+TRXXXX 01  EXEC-PARM.
+TRXXXX     05  EXEC-LENGTH                  PIC S9(4)   COMP.
+TRXXXX     05  EXEC-DATA                    PIC X(XX).
+TRXXXX EJECT
+TRXXXX*================================================================*
+TRXXXX PROCEDURE DIVISION USING EXEC-PARM.
+TRXXXX*================================================================*
+TRXXXX     IF EXEC-LENGTH > 0
+TRXXXX         MOVE EXEC-DATA TO WS-EXEC-DATA
+TRXXXX     END-IF.

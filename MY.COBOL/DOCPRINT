@@ -1,0 +1,76 @@
+000100 IDENTIFICATION DIVISION.                                         DOCPRINT
+000200 PROGRAM-ID. DOCPRINT.                                            DOCPRINT
+000300 AUTHOR. TONY REY.                                                DOCPRINT
+000400 INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.                     DOCPRINT
+000500 DATE-WRITTEN. 03/08/91.                                          DOCPRINT
+000600 REMARKS. READ AND PRINT DOCUMENTATION.                           DOCPRINT
+000700 ENVIRONMENT DIVISION.                                            DOCPRINT
+000800 CONFIGURATION SECTION.                                           DOCPRINT
+000900 SOURCE-COMPUTER. IBM-370.                                        DOCPRINT
+001000 OBJECT-COMPUTER. IBM-370.                                        DOCPRINT
+001100 SPECIAL-NAMES.  C01 IS TOPPER.                                   DOCPRINT
+001200 INPUT-OUTPUT SECTION.                                            DOCPRINT
+001300 FILE-CONTROL.                                                    DOCPRINT
+001400     SELECT DOCUMENT-FILE ASSIGN TO UT-S-SYSIN.                   DOCPRINT
+001500     SELECT PRINT-FILE    ASSIGN TO UT-S-SYSOUT.                  DOCPRINT
+001600 DATA DIVISION.                                                   DOCPRINT
+001700 FILE SECTION.                                                    DOCPRINT
+001800*----------------------------------------------------------------*DOCPRINT
+001900 FD  DOCUMENT-FILE                                                DOCPRINT
+002000     LABEL RECORDS ARE STANDARD                                   DOCPRINT
+002100     BLOCK CONTAINS 0 RECORDS                                     DOCPRINT
+002200     DATA RECORD IS DOCUMENT-REC.                                 DOCPRINT
+002300 01  DOCUMENT-REC.                                                DOCPRINT
+002400     05  D-PAGE.                                                  DOCPRINT
+002500         10  FILLER          PIC X(05).                           DOCPRINT
+002600         10  FILLER          PIC X(06).                           DOCPRINT
+002700     05  D-SUBSECTION        REDEFINES D-PAGE.                    DOCPRINT
+002800         10  FILLER          PIC X(11).                           DOCPRINT
+002900     05  FILLER              PIC X(69).                           DOCPRINT
+003000*----------------------------------------------------------------*DOCPRINT
+003100 FD  PRINT-FILE                                                   DOCPRINT
+003200     LABEL RECORDS ARE STANDARD                                   DOCPRINT
+003300     BLOCK CONTAINS 0 RECORDS                                     DOCPRINT
+003400     DATA RECORD IS PRINT-REC.                                    DOCPRINT
+003500 01  PRINT-REC.                                                   DOCPRINT
+003600     05  FILLER              PIC X(01).                           DOCPRINT
+003700     05  PRINT-DATA          PIC X(80).                           DOCPRINT
+003800 EJECT                                                            DOCPRINT
+003900*----------------------------------------------------------------*DOCPRINT
+004000 WORKING-STORAGE SECTION.                                         DOCPRINT
+004100*----------------------------------------------------------------*DOCPRINT
+004200 77  WS-LINE                 PIC 999 VALUE ZERO.                  DOCPRINT
+004300 EJECT                                                            DOCPRINT
+004400*----------------------------------------------------------------*DOCPRINT
+004500 PROCEDURE DIVISION.                                              DOCPRINT
+004600*----------------------------------------------------------------*DOCPRINT
+004700 MAIN-PROGRAM.                                                    DOCPRINT
+004800     OPEN INPUT  DOCUMENT-FILE                                    DOCPRINT
+004900          OUTPUT PRINT-FILE.                                      DOCPRINT
+005000     PERFORM READ-REC THRU                                        DOCPRINT
+005100             READ-REC-EXIT.                                       DOCPRINT
+005200     CLOSE DOCUMENT-FILE                                          DOCPRINT
+005300           PRINT-FILE.                                            DOCPRINT
+005400     STOP RUN.                                                    DOCPRINT
+005500 EJECT                                                            DOCPRINT
+005600*----------------------------------------------------------------*DOCPRINT
+005700 READ-REC.                                                        DOCPRINT
+005800     READ DOCUMENT-FILE AT END GO TO READ-REC-EXIT.               DOCPRINT
+005900 NEW-PAGE.                                                        DOCPRINT
+006000 NEW-SUBSECTION.                                                  DOCPRINT
+006100     IF D-PAGE       = '$PAGE'       OR                           DOCPRINT
+006200        D-SUBSECTION = '$SUBSECTION'                              DOCPRINT
+006300         MOVE 99 TO WS-LINE                                       DOCPRINT
+006400         GO TO READ-REC.                                          DOCPRINT
+006500 PRINT-IT.                                                        DOCPRINT
+006600     MOVE SPACES       TO PRINT-REC.                              DOCPRINT
+006700     MOVE DOCUMENT-REC TO PRINT-DATA.                             DOCPRINT
+006800     ADD 1 TO WS-LINE.                                            DOCPRINT
+006900     IF WS-LINE > 60                                              DOCPRINT
+007000         WRITE PRINT-REC AFTER TOPPER                             DOCPRINT
+007100         MOVE ZERO TO WS-LINE                                     DOCPRINT
+007200     ELSE                                                         DOCPRINT
+007300         WRITE PRINT-REC AFTER ADVANCING 1.                       DOCPRINT
+007400 GET-NEXT-REC.                                                    DOCPRINT
+007500     GO TO READ-REC.                                              DOCPRINT
+007600 READ-REC-EXIT. EXIT.                                             DOCPRINT

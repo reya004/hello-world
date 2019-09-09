@@ -1,0 +1,339 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FMBXX1.
+       AUTHOR. TONY REY.
+       INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+       DATE-WRITTEN. 01/13/97.
+       DATE-COMPILED.
+      *================================================================*
+      * PROGRAM NARRATIVE
+      *================================================================*
+      * LOAD COPYBOOK DATA INTO WMFMT53A DB2 TABLE.
+      *
+      * THIS IS A COBOL II DB2 PROGRAM (LANG = B2D).
+      *================================================================*
+      * MODIFICATION LOG
+      *================================================================*
+      * MM/DD/YY  PROGRAMMER  PROBLEM/RFS NUMBER: DESCRIPTION
+      * --------  ----------  ------------------------------------------
+CH0001* 01/13/97  TONY REY    999999: WRITE PROGRAM.
+      *================================================================*
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-370.
+       OBJECT-COMPUTER.  IBM-370.
+       SPECIAL-NAMES. C01 IS TOP-OF-PAGE.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-FILE            ASSIGN TO UT-S-INFILE
+                                     FILE STATUS IS CC-IN-FILE.
+       DATA DIVISION.
+       FILE SECTION.
+      *---------------------------------------------------------------*
+       FD  IN-FILE
+           RECORDING MODE IS F
+           RECORD CONTAINS 124 CHARACTERS
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  IN-REC.
+           05 IN-COPYBOOK        PIC X(08).
+           05 FILLER             PIC X(01).
+           05 IN-SEQ             PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 IN-FIELD-NAME      PIC X(30).
+           05 FILLER             PIC X(01).
+           05 IN-PICTURE         PIC X(30).
+           05 FILLER             PIC X(01).
+           05 IN-DATA-TYPE       PIC X(20).
+           05 FILLER             PIC X(01).
+           05 IN-OCCURS-NO       PIC 9(10).
+           05 FILLER             PIC X(01).
+           05 IN-FROM-POS        PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 IN-TO-POS          PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 IN-LEN             PIC 9(04).
+           05 FILLER             PIC X(01).
+           05 IN-REDEFINES-IND   PIC X(01).
+       EJECT
+      *===============================================================*
+       WORKING-STORAGE SECTION.
+      *===============================================================*
+       77  FILLER                    PIC X(40)
+           VALUE '*** FMBXX1 WORKING STORAGE ***'.
+      *---------------------------------------------------------------*
+       77  CC-RETURN-CODE            PIC S9(02)      VALUE 0.
+       77  CC-IN-FILE                PIC XX          VALUE SPACES.
+       COPY CCFILE.
+      *----------------------------------------------------------------*00001610
+      * WMFMT53A DCLGEN                                                 00001620
+      *----------------------------------------------------------------*00001630
+           EXEC SQL INCLUDE WMFMT53A END-EXEC.                          00001640
+      *----------------------------------------------------------------*00001610
+      * SQLCA COMMUNICATION AREA                                        00001620
+      *----------------------------------------------------------------*00001630
+           EXEC SQL INCLUDE SQLCA    END-EXEC.                          00001640
+      *----------------------------------------------------------------*00001294
+      * DB2 ABORT AREA                                                  00001295
+      *----------------------------------------------------------------*00001296
+           COPY WSDB2.                                                  00001640
+           COPY WSSQLERR.                                               00001640
+
+       01  ABORT-ROUTINE.                                               00001297
+           05  ABORT-PROGRAM           PIC X(08).                       00001298
+           05  ABORT-DB2-PLAN          PIC X(08).                       00001299
+           05  ABORT-ASTERISKS         PIC X(80) VALUE ALL '*'.         00001300
+           05  ABORT-PARAGRAPH         PIC X(32).                       00001310
+           05  ABORT-DATABASE          PIC X(15).                       00001320
+           05  ABORT-SQLCODE           PIC Z(08)9-.                     00001340
+           05  ABORT-FILE-STATUS       PIC XX.                          00001340
+           03  ABORT-KEY.                                               00001350
+               05  ABORT-KEY-COPYBOOK  PIC X(08).                       00001360
+               05  ABORT-KEY-SEQ       PIC 9(04).                       00001370
+      *---------------------------------------------------------------*
+
+       01  AC-RECORDS.
+           05  FILLER            PIC X(16)        VALUE
+               'INFILE RECORDS: '.
+           05  AC-IN-REC         PIC 9(7)         VALUE ZERO.
+           05  FILLER            PIC X(03)        VALUE ' / '.
+           05  FILLER            PIC X(17)        VALUE
+               'DB2 RECORDS:: '.
+           05  AC-OUT-REC        PIC 9(7)         VALUE ZERO.
+      *---------------------------------------------------------------*
+       77  FILLER                    PIC X(40)
+           VALUE '*** FMBXX1 WORKING STORAGE END ***'.
+       EJECT
+      *===============================================================*
+       PROCEDURE DIVISION.
+      *===============================================================*
+       MAIN-PROGRAM.
+           DISPLAY '*** FMBXX1 STARTING ***'.
+           MOVE 'FMBXX1'                    TO ABORT-PROGRAM.           00001940
+           MOVE 'FMBXX1D'                   TO ABORT-DB2-PLAN.          00001950
+           MOVE SPACES                      TO ABORT-PARAGRAPH.         00002190
+           MOVE SPACES                      TO ABORT-DATABASE.          00002191
+           MOVE +0                          TO ABORT-SQLCODE.           00002194
+           MOVE SPACES                      TO ABORT-FILE-STATUS.       00002194
+           MOVE SPACES                      TO ABORT-KEY-COPYBOOK.      00001360
+           MOVE ZERO                        TO ABORT-KEY-SEQ.           00001370
+
+           OPEN INPUT  IN-FILE.
+
+           PERFORM 600-READ-IN-FILE THRU 600-EXIT
+
+           PERFORM 100-MAIN-PROCESS THRU 100-EXIT
+                   UNTIL CC-IN-FILE = CC-EOF.
+
+           CLOSE IN-FILE
+           DISPLAY AC-RECORDS.
+           DISPLAY '*** FMBXX1 ENDING ***'.
+           STOP RUN.
+       EJECT
+      *---------------------------------------------------------------*
+       100-MAIN-PROCESS.
+           MOVE IN-COPYBOOK            TO FM53-COPYBOOK.
+           MOVE IN-SEQ                 TO FM53-SEQ.
+           MOVE IN-FIELD-NAME          TO FM53-FIELD-NAME.
+           MOVE IN-PICTURE             TO FM53-PICTURE-COB
+           MOVE IN-DATA-TYPE           TO FM53-DATA-TYPE.
+           MOVE IN-OCCURS-NO           TO FM53-OCCURS-NO.
+           MOVE IN-FROM-POS            TO FM53-FROM-POS.
+           MOVE IN-TO-POS              TO FM53-TO-POS.
+           MOVE IN-LEN                 TO FM53-LEN.
+           MOVE IN-REDEFINES-IND       TO FM53-REDEFINES-IND.
+
+           EXEC SQL
+                INSERT INTO WMFMT53A
+                        ( COPYBOOK
+                        , SEQ
+                        , FIELD_NAME
+                        , PICTURE_COB
+                        , DATA_TYPE
+                        , OCCURS_NO
+                        , FROM_POS
+                        , TO_POS
+                        , LEN
+                        , REDEFINES_IND )
+                 VALUES ( :FM53-COPYBOOK
+                        , :FM53-SEQ
+                        , :FM53-FIELD-NAME
+                        , :FM53-PICTURE-COB
+                        , :FM53-DATA-TYPE
+                        , :FM53-OCCURS-NO
+                        , :FM53-FROM-POS
+                        , :FM53-TO-POS
+                        , :FM53-LEN
+                        , :FM53-REDEFINES-IND)
+            END-EXEC.
+
+            EVALUATE SQLCODE
+            WHEN +0
+                ADD 1 TO AC-OUT-REC
+
+            WHEN -803
+      ***       DUPLICATE RECORD ***
+                EXEC SQL
+                     UPDATE  WMFMT53A
+                        SET  COPYBOOK        = :FM53-COPYBOOK
+                           , SEQ             = :FM53-SEQ
+                           , FIELD_NAME      = :FM53-FIELD-NAME
+                           , PICTURE_COB     = :FM53-PICTURE-COB
+                           , DATA_TYPE       = :FM53-DATA-TYPE
+                           , OCCURS_NO       = :FM53-OCCURS-NO
+                           , FROM_POS        = :FM53-FROM-POS
+                           , TO_POS          = :FM53-TO-POS
+                           , LEN             = :FM53-LEN
+                           , REDEFINES_IND   = :FM53-REDEFINES-IND
+                      WHERE  COPYBOOK        = :FM53-COPYBOOK
+                        AND  SEQ             = :FM53-SEQ
+                END-EXEC
+
+                IF  SQLCODE = +0
+                    ADD 1 TO AC-OUT-REC
+                ELSE
+                    MOVE '100-ABORT-PROCESS' TO ABORT-PARAGRAPH
+                    MOVE 'WMFMT53A'          TO ABORT-DATABASE
+                    MOVE SQLCODE             TO ABORT-SQLCODE           00001360
+                    MOVE SPACES              TO ABORT-FILE-STATUS       00001360
+                    MOVE IN-COPYBOOK         TO ABORT-KEY-COPYBOOK      00001360
+                    MOVE IN-SEQ              TO ABORT-KEY-SEQ           00001370
+                    GO TO 999-ABORT
+      ***           >-------------->>
+                END-IF
+
+            WHEN OTHER
+                MOVE '100-ABORT-PROCESS' TO ABORT-PARAGRAPH
+                MOVE 'WMFMT53A'          TO ABORT-DATABASE
+                MOVE SQLCODE             TO ABORT-SQLCODE               00001360
+                MOVE SPACES              TO ABORT-FILE-STATUS           00001360
+                MOVE IN-COPYBOOK         TO ABORT-KEY-COPYBOOK          00001360
+                MOVE IN-SEQ              TO ABORT-KEY-SEQ               00001370
+                GO TO 999-ABORT
+      ***       >-------------->>
+
+            END-EVALUATE.
+
+           PERFORM 600-READ-IN-FILE THRU 600-EXIT.
+
+       100-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+       600-READ-IN-FILE.
+           READ IN-FILE.
+           MOVE CC-IN-FILE TO CC-STATUS.
+           IF  CC-STATUS = CC-OK
+               ADD 1 TO AC-IN-REC
+           ELSE
+               IF CC-STATUS = CC-EOF
+                   CONTINUE
+               ELSE
+                   ADD 1 TO AC-IN-REC
+                   MOVE '600-READ-IN-FILE'  TO ABORT-PARAGRAPH
+                   MOVE 'IN-FILE'           TO ABORT-DATABASE
+                   MOVE +0                  TO ABORT-SQLCODE            00001360
+                   MOVE CC-STATUS           TO ABORT-FILE-STATUS        00001360
+                   MOVE 'IN REC#'           TO ABORT-KEY-COPYBOOK       00001360
+                   MOVE AC-IN-REC           TO ABORT-KEY-SEQ            00001370
+                   GO TO 999-ABORT
+      ***          >-------------->>
+               END-IF
+           END-IF.
+       600-EXIT. EXIT.
+           EJECT                                                        00003691
+      *---------------------------------------------------------------*
+      * 1. SET PROGRAM STATUS FLAG TO 'F' (FATAL ERROR).                00003694
+      * 2. DISPLAY PLAN, PROGRAM, PARAGRAPH, AND DATABASE.              00003695
+      * 3. DISPLAY ERROR RELATED INFORMATION IN SQLCA OR FILE STATUS.   00003696
+      * 4. DISPLAY DB2 KEY OR PROBLEM RECORD#.                          00003696
+      * 5. EXPAND SQL ERROR MESSAGE WITH DSNTIAR, & THEN DISPLAY.       00003697
+      * 6. ABORT THE PROGRAM.                                           00003697
+      *---------------------------------------------------------------*
+       999-ABORT.
+           DISPLAY ABORT-ASTERISKS.                                     00003710
+           DISPLAY 'PROGRAM ' ABORT-PROGRAM ' ABORTED'.                 00003720
+           DISPLAY 'ABORT DB2 PLAN:       ' ABORT-DB2-PLAN.             00003730
+           DISPLAY 'ABORT PARAGRAPH:      ' ABORT-PARAGRAPH.            00003740
+           DISPLAY 'ABORT DATABASE:       ' ABORT-DATABASE.             00003750
+           DISPLAY 'ABORT SQLCODE:        ' ABORT-SQLCODE.              00003770
+           DISPLAY 'ABORT FILE STATUS     ' ABORT-FILE-STATUS.          00003770
+           DISPLAY 'ABORT KEY:            ' ABORT-KEY.                  00003780
+           DISPLAY ABORT-ASTERISKS.                                     00003790
+                                                                        00003791
+           IF  SQLCODE = +0                                             00003792
+      ***      PROGRAM DIES HERE!!! ***                                 00003840
+               CALL 'ABORT'                                             00003793
+           END-IF.                                                      00003797
+      ***                                                               00003840
+      **** DISPLAY THE CONTENTS OF SQL COMMUNICATIONS AREA              00003850
+      ***                                                               00003860
+           MOVE 'F' TO STATUS-FLAG.                                     00003795
+                                                                        00003880
+           DISPLAY ' '.                                                 00003890
+           DISPLAY '*-----------------------------------------------*'. 00003891
+           DISPLAY '*                    SQLCA                      *'. 00003892
+           DISPLAY '*-----------------------------------------------*'. 00003893
+           MOVE SQLCAID      TO   DB2-DS-SQLCAID.                       00003894
+           MOVE SQLCABC      TO   DB2-DS-SQLCABC.                       00003895
+           MOVE SQLCODE      TO   DB2-DS-SQLCODE.                       00003896
+           MOVE SQLERRML     TO   DB2-DS-SQLERRML.                      00003897
+           MOVE SQLERRMC     TO   DB2-DS-SQLERRMC.                      00003898
+           MOVE SQLERRP      TO   DB2-DS-SQLERRP.                       00003899
+           MOVE SQLERRD(1)   TO   DB2-DS-SQLERRD1.                      00003900
+           MOVE SQLERRD(2)   TO   DB2-DS-SQLERRD2.                      00003910
+           MOVE SQLERRD(3)   TO   DB2-DS-SQLERRD3.                      00003920
+           MOVE SQLERRD(4)   TO   DB2-DS-SQLERRD4.                      00003930
+           MOVE SQLERRD(5)   TO   DB2-DS-SQLERRD5.                      00003940
+           MOVE SQLERRD(6)   TO   DB2-DS-SQLERRD6.                      00003950
+           MOVE SQLWARN0     TO   DB2-DS-SQLWARN0.                      00003960
+           MOVE SQLWARN1     TO   DB2-DS-SQLWARN1.                      00003970
+           MOVE SQLWARN2     TO   DB2-DS-SQLWARN2.                      00003980
+           MOVE SQLWARN3     TO   DB2-DS-SQLWARN3.                      00003990
+           MOVE SQLWARN4     TO   DB2-DS-SQLWARN4.                      00003991
+           MOVE SQLWARN5     TO   DB2-DS-SQLWARN5.                      00003992
+           MOVE SQLWARN6     TO   DB2-DS-SQLWARN6.                      00003993
+           MOVE SQLWARN7     TO   DB2-DS-SQLWARN7.                      00003994
+           MOVE SQLEXT       TO   DB2-DS-SQLEXT.                        00003995
+                                                                        00003996
+           DISPLAY  'SQLCAID  = ' DB2-DS-SQLCAID.                       00003997
+           DISPLAY  'SQLCABC  = ' DB2-DS-SQLCABC.                       00003998
+           DISPLAY  'SQLCODE  = ' DB2-DS-SQLCODE.                       00003999
+           DISPLAY  'SQLERRML = ' DB2-DS-SQLERRML.                      00004000
+           DISPLAY  'SQLERRMC = ' DB2-DS-SQLERRMC.                      00004010
+           DISPLAY  'SQLERRP  = ' DB2-DS-SQLERRP.                       00004020
+           DISPLAY  'SQLERRD1 = ' DB2-DS-SQLERRD1.                      00004030
+           DISPLAY  'SQLERRD2 = ' DB2-DS-SQLERRD2.                      00004040
+           DISPLAY  'SQLERRD3 = ' DB2-DS-SQLERRD3.                      00004050
+           DISPLAY  'SQLERRD4 = ' DB2-DS-SQLERRD4.                      00004060
+           DISPLAY  'SQLERRD5 = ' DB2-DS-SQLERRD5.                      00004070
+           DISPLAY  'SQLERRD6 = ' DB2-DS-SQLERRD6.                      00004080
+           DISPLAY  'SQLWARN0 = ' DB2-DS-SQLWARN0.                      00004090
+           DISPLAY  'SQLWARN1 = ' DB2-DS-SQLWARN1.                      00004091
+           DISPLAY  'SQLWARN2 = ' DB2-DS-SQLWARN2.                      00004092
+           DISPLAY  'SQLWARN3 = ' DB2-DS-SQLWARN3.                      00004093
+           DISPLAY  'SQLWARN4 = ' DB2-DS-SQLWARN4.                      00004094
+           DISPLAY  'SQLWARN5 = ' DB2-DS-SQLWARN5.                      00004095
+           DISPLAY  'SQLWARN6 = ' DB2-DS-SQLWARN6.                      00004096
+           DISPLAY  'SQLWARN7 = ' DB2-DS-SQLWARN7.                      00004097
+           DISPLAY  'SQLEXT   = ' DB2-DS-SQLEXT.                        00004098
+      ***                                                               00004110
+      **** DISPLAY ERROR MESSAGES AND DIAGNOSTICS                       00004120
+      ***                                                               00004130
+           CALL 'DSNTIAR'  USING SQLCA                                  00004150
+                                 DB2-ERROR-MESSAGE                      00004160
+                                 DB2-ERROR-TEXT-LEN.                    00004170
+           DISPLAY ' '.                                                 00004190
+           DISPLAY '*-----------------------------------------------*'. 00004191
+           DISPLAY '*                   DSNTIAR                     *'. 00004192
+           DISPLAY '*-----------------------------------------------*'. 00004193
+           DISPLAY DB2-ERROR-TEXT(1).                                   00004194
+           DISPLAY DB2-ERROR-TEXT(2).                                   00004195
+           DISPLAY DB2-ERROR-TEXT(3).                                   00004196
+           DISPLAY DB2-ERROR-TEXT(4).                                   00004197
+           DISPLAY DB2-ERROR-TEXT(5).                                   00004198
+           DISPLAY DB2-ERROR-TEXT(6).                                   00004199
+           DISPLAY DB2-ERROR-TEXT(7).                                   00004200
+           DISPLAY DB2-ERROR-TEXT(8).                                   00004210
+           DISPLAY ' '.                                                 00004220
+                                                                        00004230
+           CALL 'ABORT'.                                                00003793
+      ***  PROGRAM DIES HERE!!! ***                                     00003840

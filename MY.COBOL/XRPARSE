@@ -1,0 +1,563 @@
+000100 IDENTIFICATION DIVISION.                                         XRPARSE
+000200 PROGRAM-ID. XRPARSE.                                             XRPARSE
+000300 AUTHOR. TONY REY.                                                XRPARSE
+000400 INSTALLATION. TONY REY INC.                                      XRPARSE
+000500 DATE-WRITTEN. 08/12/93.                                          XRPARSE
+000600 DATE-COMPILED.                                                   XRPARSE
+000700*================================================================*XRPARSE
+000800* PROGRAM NARRATIVE                                               XRPARSE
+000900*================================================================*XRPARSE
+001000* READ SOURCE TO FIND SELECTED LITERAL STRINGS.                   XRPARSE
+001100*                                                                 XRPARSE
+001200* EXAMPLE PARMS:                                                  XRPARSE
+001300*                                                                 XRPARSE
+001400*  //PARM DD *                                                    XRPARSE
+001500*  MEMBER NAME  ,01,14,                                           XRPARSE
+001600*  SET COBOL                                                      XRPARSE
+001700*  SET QUOTE INCL                                                 XRPARSE
+001800*  SET DELIM ,                                                    XRPARSE
+001900*  MEMBER NAME  ,01,14,                                           XRPARSE
+002000*  *,07,07,                                                       XRPARSE
+002100*   SELECT ,12,40,                                                XRPARSE
+002200*   OPEN ,12,72,                                                  XRPARSE
+002300*  SET DELIM /                                                    XRPARSE
+002400*   CLOSE /12/72/                                                 XRPARSE
+002500*  /*                                                             XRPARSE
+002600*================================================================*XRPARSE
+002700* MODIFICATION LOG                                                XRPARSE
+002800*                                                                 XRPARSE
+002900* TWO PROGRAMMER INITIALS IMMEDIATELY FOLLOWED BY THE CHANGE      XRPARSE
+003000* DATE IN COLUMNS 73-80 SHOULD MARK ANY PROGRAM CHANGES.          XRPARSE
+003100*================================================================*XRPARSE
+003200* MM/DD/YY  PROGRAMMER  PROBLEM/RFS NUMBER: DESCRIPTION           XRPARSE
+003300* --------  ----------  ------------------------------------------XRPARSE
+003400* 08/12/93  TONY REY    I WROTE THIS PROGRAM.                     XRPARSE
+003500*================================================================*XRPARSE
+003600 ENVIRONMENT DIVISION.                                            XRPARSE
+003700 CONFIGURATION SECTION.                                           XRPARSE
+003800 SOURCE-COMPUTER.  IBM-370.                                       XRPARSE
+003900 OBJECT-COMPUTER.  IBM-370.                                       XRPARSE
+004000 SPECIAL-NAMES. C01 IS TOP-OF-PAGE.                               XRPARSE
+004100 INPUT-OUTPUT SECTION.                                            XRPARSE
+004200 FILE-CONTROL.                                                    XRPARSE
+004300     SELECT PARM-FILE            ASSIGN TO UT-S-PARM              XRPARSE
+004400                                 FILE STATUS IS CC-PARM-FILE.     XRPARSE
+004500     SELECT SOURCE-FILE          ASSIGN TO UT-S-SOURCE            XRPARSE
+004600                                 FILE STATUS IS CC-SOURCE-FILE.   XRPARSE
+004700     SELECT PRINT-FILE           ASSIGN TO UT-S-PRINT.            XRPARSE
+004800 DATA DIVISION.                                                   XRPARSE
+004900 FILE SECTION.                                                    XRPARSE
+005000*---------------------------------------------------------------* XRPARSE
+005100 FD  PARM-FILE                                                    XRPARSE
+005200     BLOCK CONTAINS 0 RECORDS                                     XRPARSE
+005300     RECORDING MODE IS F                                          XRPARSE
+005400     RECORD CONTAINS 80 CHARACTERS                                XRPARSE
+005500     LABEL RECORDS ARE STANDARD.                                  XRPARSE
+005600 01  PARM-REC                   PIC X(80).                        XRPARSE
+005700***                                                               XRPARSE
+005800 01  PARM-REC-R.                                                  XRPARSE
+005900     05 PARM-KEYWORD            PIC X(15).                        XRPARSE
+006000        88  P-COBOL-MODE        VALUE 'SET COBOL      '.          XRPARSE
+006100        88  P-TEXT-MODE         VALUE 'SET TEXT       '.          XRPARSE
+006200        88  P-DELIM-COMMA       VALUE 'SET DELIM ,    '.          XRPARSE
+006300        88  P-DELIM-PERIOD      VALUE 'SET DELIM .    '.          XRPARSE
+006400        88  P-DELIM-SLASH       VALUE 'SET DELIM /    '.          XRPARSE
+006500        88  P-QUOTE-INCLUDE     VALUE 'SET QUOTE INCL '.          XRPARSE
+006600        88  P-QUOTE-EXCLUDE     VALUE 'SET QUOTE EXCL '.          XRPARSE
+006700     05 FILLER                  PIC X(65).                        XRPARSE
+006800*---------------------------------------------------------------* XRPARSE
+006900 FD  SOURCE-FILE                                                  XRPARSE
+007000     BLOCK CONTAINS 0 RECORDS                                     XRPARSE
+007100     RECORDING MODE IS F                                          XRPARSE
+007200     RECORD CONTAINS 81 CHARACTERS                                XRPARSE
+007300     LABEL RECORDS ARE STANDARD.                                  XRPARSE
+007400 01  SOURCE-FILE-REC            PIC X(81).                        XRPARSE
+007500 01  COBOL-REC.                                                   XRPARSE
+007600     05 FILLER                  PIC X(01).                        XRPARSE
+007700     05 FILLER                  PIC X(06).                        XRPARSE
+007800     05 C-COMMENT               PIC X(01).                        XRPARSE
+007900     05 C-A-MARGIN              PIC X(04).                        XRPARSE
+008000     05 C-B-MARGIN              PIC X(61).                        XRPARSE
+008100     05 C-SEQ                   PIC X(08).                        XRPARSE
+008200*---------------------------------------------------------------* XRPARSE
+008300 FD  PRINT-FILE                                                   XRPARSE
+008400     BLOCK CONTAINS 0 RECORDS                                     XRPARSE
+008500     RECORDING MODE IS F                                          XRPARSE
+008600     RECORD CONTAINS 133 CHARACTERS                               XRPARSE
+008700     LABEL RECORDS ARE STANDARD.                                  XRPARSE
+008800 01  PRINT-REC          PIC X(133).                               XRPARSE
+008900 EJECT                                                            XRPARSE
+009000*===============================================================* XRPARSE
+009100 WORKING-STORAGE SECTION.                                         XRPARSE
+009200*===============================================================* XRPARSE
+009300 COPY CCFILE.                                                     XRPARSE
+009400 77  CC-SOURCE-FILE        PIC XX VALUE SPACES.                   XRPARSE
+009500 77  CC-PARM-FILE          PIC XX VALUE SPACES.                   XRPARSE
+009600*---------------------------------------------------------------* XRPARSE
+009700 77  AC-SOURCE-FILE        PIC 9(7)         VALUE ZERO.           XRPARSE
+009800 77  AC-PARM-FILE          PIC 9(7)         VALUE ZERO.           XRPARSE
+009900*---------------------------------------------------------------* XRPARSE
+010000 77  AC-LEFT-QUOTE         PIC 99           VALUE ZERO.           XRPARSE
+010100 77  AC-RIGHT-QUOTE        PIC 99           VALUE ZERO.           XRPARSE
+010200*---------------------------------------------------------------* XRPARSE
+010300 01  AC-LINE               PIC 9(03)        VALUE 99.             XRPARSE
+010400 01  CSN-LINES-MAX         PIC 9(03)        VALUE 60.             XRPARSE
+010500 01  HL                    PIC X(81)        VALUE                 XRPARSE
+010600     '    XRPARSE CROSS REFERENCE     '.                          XRPARSE
+010700 01  DL                    PIC X(81)        VALUE SPACES.         XRPARSE
+010800*---------------------------------------------------------------* XRPARSE
+010900 77  CSN-ZERO              PIC 9            VALUE ZERO.           XRPARSE
+011000 77  CSA-Y                 PIC X            VALUE 'Y'.            XRPARSE
+011100 77  CSA-N                 PIC X            VALUE 'N'.            XRPARSE
+011200 77  CSA-COMMA             PIC X            VALUE ','.            XRPARSE
+011300 77  CSA-PERIOD            PIC X            VALUE '.'.            XRPARSE
+011400 77  CSA-SLASH             PIC X            VALUE '/'.            XRPARSE
+011500 77  CSA-EQUAL             PIC X            VALUE '='.            XRPARSE
+011600 77  CSA-QUOTE-DBL         PIC X            VALUE '"'.            XRPARSE
+011700 01  CSA-QUOTE-VIA-BRUTE-FORCE.                                   XRPARSE
+011800     05 CSN-125            PIC S9(4) COMP   VALUE +125.           XRPARSE
+011900     05 CSN-125-R          REDEFINES CSN-125.                     XRPARSE
+012000        10 FILLER          PIC X.                                 XRPARSE
+012100        10 CSA-QUOTE       PIC X.                                 XRPARSE
+012200 77  CSA-COBOL             PIC X(5)    VALUE 'COBOL'.             XRPARSE
+012300 77  CSA-TEXT              PIC X(4)    VALUE 'TEXT'.              XRPARSE
+012400*---------------------------------------------------------------* XRPARSE
+012500 77  DELIM-AC              PIC 9(03)        VALUE ZERO.           XRPARSE
+012600 77  POS-SRCE              PIC 9(03)        VALUE ZERO.           XRPARSE
+012700 77  POS-TRGT              PIC 9(03)        VALUE ZERO.           XRPARSE
+012800 77  POS-ANCHOR            PIC 9(03)        VALUE ZERO.           XRPARSE
+012900 77  POS-SCAN              PIC 9(03)        VALUE ZERO.           XRPARSE
+013000 77  POS-SCAN-END          PIC 9(03)        VALUE ZERO.           XRPARSE
+013100 77  POS-SCAN-MAX          PIC 9(03)        VALUE ZERO.           XRPARSE
+013200 77  SCAN-LEN              PIC 9(03)        VALUE ZERO.           XRPARSE
+013300 77  PARSE-MATCH-Y-N       PIC X(1)         VALUE 'N'.            XRPARSE
+013400 77  WS-LEN                PIC 9(3)         VALUE ZERO.           XRPARSE
+013500*---------------------------------------------------------------* XRPARSE
+013600* THE FOLLOWING ARE SET BY PARM-FILE RECORDS:                     XRPARSE
+013700*  SET COBOL                                                      XRPARSE
+013800*  SET QUOTE EXCL                                                 XRPARSE
+013900*  SET QUOTE INCL                                                 XRPARSE
+014000*  SET DELIM ?                                                    XRPARSE
+014100*---------------------------------------------------------------* XRPARSE
+014200 01  PROG-MODE             PIC X(8)    VALUE 'COBOL   '.          XRPARSE
+014300     88 COBOL-MODE                     VALUE 'COBOL   '.          XRPARSE
+014400     88 TEXT-MODE                      VALUE 'TEXT    '.          XRPARSE
+014500 01  WS-DELIM              PIC X(1)    VALUE ','.                 XRPARSE
+014600 01  WS-QUOTE-INCL-Y-N     PIC X(1)    VALUE 'Y'.                 XRPARSE
+014700*---------------------------------------------------------------* XRPARSE
+014800 01  PARM-TBL.                                                    XRPARSE
+014900     05  PARM-ENTRIES          OCCURS  100 TIMES.                 XRPARSE
+015000         10 PARM-ENTRY         PIC X(80).                         XRPARSE
+015100         10 PARM-LEN           PIC 9(03).                         XRPARSE
+015200         10 PARM-SRCH-FROM-POS PIC 9(02).                         XRPARSE
+015300         10 PARM-SRCH-TO-POS   PIC 9(02).                         XRPARSE
+015400***                                                               XRPARSE
+015500 77  PARM-IDX              PIC 9(4) VALUE ZERO.                   XRPARSE
+015600 77  PARM-TBL-SIZE         PIC 9(4) VALUE ZERO.                   XRPARSE
+015700 77  PARM-TBL-SIZE-MAX     PIC 9(4) VALUE 500.                    XRPARSE
+015800*---------------------------------------------------------------* XRPARSE
+015900 01  PRINT-TBL.                                                   XRPARSE
+016000     05  PRINT-ENTRIES     OCCURS 500 TIMES.                      XRPARSE
+016100         10 PRINT-ENTRY    PIC X(80).                             XRPARSE
+016200 77  PRINT-TBL-SIZE        PIC 9(4) VALUE ZERO.                   XRPARSE
+016300 77  PRINT-TBL-SIZE-MAX    PIC 9(4) VALUE 500.                    XRPARSE
+016400*---------------------------------------------------------------* XRPARSE
+016500 EJECT                                                            XRPARSE
+016600*===============================================================* XRPARSE
+016700 PROCEDURE DIVISION.                                              XRPARSE
+016800*===============================================================* XRPARSE
+016900 MAIN-PROGRAM.                                                    XRPARSE
+017000     DISPLAY 'XRPARSE STARTING'.                                  XRPARSE
+017100 OPEN-FILES.                                                      XRPARSE
+017200     PERFORM 800-OPEN THRU                                        XRPARSE
+017300             800-OPEN-EXIT.                                       XRPARSE
+017400 INITIAL-PROCESS.                                                 XRPARSE
+017500     PERFORM 050-INITIAL-PROCESS THRU                             XRPARSE
+017600             050-INITIAL-PROCESS-EXIT.                            XRPARSE
+017700 INIT-READ.                                                       XRPARSE
+017800     DISPLAY 'INITIAL READ'.                                      XRPARSE
+017900     PERFORM 500-READ-SOURCE-FILE THRU                            XRPARSE
+018000             500-READ-SOURCE-FILE-EXIT.                           XRPARSE
+018100 PROCESS-PARM-FILE.                                               XRPARSE
+018200     PERFORM 510-READ-PARM-FILE THRU                              XRPARSE
+018300             510-READ-PARM-FILE-EXIT.                             XRPARSE
+018400 MAIN-PROCESS.                                                    XRPARSE
+018500     DISPLAY 'MAIN PROCESS'.                                      XRPARSE
+018600     PERFORM 100-MAIN-PROCESS THRU                                XRPARSE
+018700             100-MAIN-PROCESS-EXIT                                XRPARSE
+018800             UNTIL CC-SOURCE-FILE = CC-EOF.                       XRPARSE
+018900 CLOSE-FILES.                                                     XRPARSE
+019000     PERFORM 850-CLOSE THRU                                       XRPARSE
+019100             850-CLOSE-EXIT.                                      XRPARSE
+019200 FINISH-PROGRAM.                                                  XRPARSE
+019300     PERFORM 900-STATISTICS THRU                                  XRPARSE
+019400             900-STATISTICS-EXIT.                                 XRPARSE
+019500     DISPLAY 'XRPARSE ENDING'.                                    XRPARSE
+019600     STOP RUN.                                                    XRPARSE
+019700 EJECT                                                            XRPARSE
+019800*---------------------------------------------------------------* XRPARSE
+019900* INITIAL PROCESSING                                              XRPARSE
+020000*---------------------------------------------------------------* XRPARSE
+020100 050-INITIAL-PROCESS.                                             XRPARSE
+020200     DISPLAY 'INITIAL PROCESS'.                                   XRPARSE
+020300     MOVE LENGTH OF SOURCE-FILE-REC TO POS-SCAN-MAX.              XRPARSE
+020400     COMPUTE WS-LEN = LENGTH OF PARM-ENTRY (1) + 1.               XRPARSE
+020500     IF POS-SCAN-MAX > WS-LEN                                     XRPARSE
+020600***      THIS LOGIC IS HERE IN CASE THE PROGRAM IS CHANGED *      XRPARSE
+020700         DISPLAY 'ERROR,PARM-ENTRY IN TABLE TOO SHORT'            XRPARSE
+020800         PERFORM 999-CANCEL THRU                                  XRPARSE
+020900                 999-CANCEL-EXIT                                  XRPARSE
+021000     END-IF.                                                      XRPARSE
+021100 050-INITIAL-PROCESS-EXIT. EXIT.                                  XRPARSE
+021200 EJECT                                                            XRPARSE
+021300*---------------------------------------------------------------* XRPARSE
+021400* MAIN PROCESS                                                    XRPARSE
+021500*---------------------------------------------------------------* XRPARSE
+021600 100-MAIN-PROCESS.                                                XRPARSE
+021700     IF COBOL-MODE                                                XRPARSE
+021800         PERFORM 110-COBOL-PROCESS THRU                           XRPARSE
+021900                 110-COBOL-PROCESS-EXIT                           XRPARSE
+022000     END-IF.                                                      XRPARSE
+022100 100-TEXT-PROCESS.                                                XRPARSE
+022200     IF TEXT-MODE                                                 XRPARSE
+022300         PERFORM 120-TEXT-PROCESS THRU                            XRPARSE
+022400                 120-TEXT-PROCESS-EXIT                            XRPARSE
+022500     END-IF.                                                      XRPARSE
+022600 100-READ.                                                        XRPARSE
+022700     PERFORM 500-READ-SOURCE-FILE THRU                            XRPARSE
+022800             500-READ-SOURCE-FILE-EXIT.                           XRPARSE
+022900 100-MAIN-PROCESS-EXIT. EXIT.                                     XRPARSE
+023000 EJECT                                                            XRPARSE
+023100*---------------------------------------------------------------* XRPARSE
+023200* COBOL PROCESS                                                   XRPARSE
+023300*                                                                 XRPARSE
+023400* LOGIC TO PERFORM THE FOLLOWING HAS NOT BEEN ADDED:              XRPARSE
+023500* - LOGIC TO CAPTURE AN ENTIRE SENTENCE                           XRPARSE
+023600* - LOGIC TO EXCLUDE QUOTED MATERIAL FROM SEARCH                  XRPARSE
+023700*---------------------------------------------------------------* XRPARSE
+023800 110-COBOL-PROCESS.                                               XRPARSE
+023900     PERFORM 300-PARSE THRU                                       XRPARSE
+024000             300-PARSE-EXIT.                                      XRPARSE
+024100 110-PARSE-MATCH.                                                 XRPARSE
+024200     IF PARSE-MATCH-Y-N = CSA-Y                                   XRPARSE
+024300***      MATCH = YES - PRINT *                                    XRPARSE
+024400         IF PARM-IDX = 1                                          XRPARSE
+024500***          FIRST PARM WILL BE LITERAL TO IDENTIFY NEW MEMBER -  XRPARSE
+024600***          CAUSE THE NEXT PRINT LINE TO START ON A NEW PAGE *   XRPARSE
+024700             MOVE 99 TO AC-LINE                                   XRPARSE
+024800         END-IF                                                   XRPARSE
+024900         MOVE SOURCE-FILE-REC TO DL                               XRPARSE
+025000         PERFORM 700-PRINT THRU                                   XRPARSE
+025100                 700-PRINT-EXIT                                   XRPARSE
+025200         GO TO 110-COBOL-PROCESS-EXIT                             XRPARSE
+025300     END-IF.                                                      XRPARSE
+025400 110-COMMENT.                                                     XRPARSE
+025500     IF C-COMMENT NOT = SPACES                                    XRPARSE
+025600***      THIS IS A COMMENT  - PRINT *                             XRPARSE
+025700         MOVE SOURCE-FILE-REC TO DL                               XRPARSE
+025800         PERFORM 700-PRINT THRU                                   XRPARSE
+025900                 700-PRINT-EXIT                                   XRPARSE
+026000         GO TO 110-COBOL-PROCESS-EXIT                             XRPARSE
+026100     END-IF.                                                      XRPARSE
+026200 110-PARAGRAPH-START.                                             XRPARSE
+026300     IF C-A-MARGIN NOT = SPACE AND                                XRPARSE
+026400        C-A-MARGIN (3:1) NOT = SPACE                              XRPARSE
+026500***      THIS IS A PARAGRAPH LABEL - PRINT *                      XRPARSE
+026600         MOVE SOURCE-FILE-REC TO DL                               XRPARSE
+026700         PERFORM 700-PRINT THRU                                   XRPARSE
+026800                 700-PRINT-EXIT                                   XRPARSE
+026900         GO TO 110-COBOL-PROCESS-EXIT                             XRPARSE
+027000     END-IF.                                                      XRPARSE
+027100 110-COBOL-PROCESS-EXIT. EXIT.                                    XRPARSE
+027200 EJECT                                                            XRPARSE
+027300*---------------------------------------------------------------* XRPARSE
+027400* TEXT PROCESS ROUTINE                                            XRPARSE
+027500*---------------------------------------------------------------* XRPARSE
+027600 120-TEXT-PROCESS.                                                XRPARSE
+027700     PERFORM 300-PARSE THRU                                       XRPARSE
+027800             300-PARSE-EXIT.                                      XRPARSE
+027900     IF PARSE-MATCH-Y-N = CSA-Y                                   XRPARSE
+028000***      MATCH - PRINT *                                          XRPARSE
+028100         IF PARM-IDX = 1                                          XRPARSE
+028200***          FIRST PARM WILL BE LITERAL TO IDENTIFY NEW MEMBER -  XRPARSE
+028300***          CAUSE NEXT PRINT LINE TO START ON NEW PAGE *         XRPARSE
+028400             MOVE 99 TO AC-LINE                                   XRPARSE
+028500         END-IF                                                   XRPARSE
+028600         MOVE SOURCE-FILE-REC TO DL                               XRPARSE
+028700         PERFORM 700-PRINT THRU                                   XRPARSE
+028800                 700-PRINT-EXIT                                   XRPARSE
+028900     END-IF.                                                      XRPARSE
+029000 120-TEXT-PROCESS-EXIT. EXIT.                                     XRPARSE
+029100 EJECT                                                            XRPARSE
+029200*---------------------------------------------------------------* XRPARSE
+029300* PARSE ROUTINE - SCAN THE SOURCE FILE REC FOR SELECTED           XRPARSE
+029400* SEARCH PARAMETERS STORED IN THE THE PARM-TBL.                   XRPARSE
+029500*                                                                 XRPARSE
+029600* RETURNS THE FOLLOWING:                                          XRPARSE
+029700* - PARSE-MATCH-Y-N   : IF MATCH RETURNS CSA-Y; OTHERWISE CSA-N.  XRPARSE
+029800* - POS-ANCHOR        : MATCH STARTING POSITION.                  XRPARSE
+029900* - PARM-IDX          : MATCH ITEM INDEX IN PARM-TBL.             XRPARSE
+030000* - SCAN-LEN          : MATCH ITEM LENGTH.                        XRPARSE
+030100*---------------------------------------------------------------* XRPARSE
+030200 300-PARSE.                                                       XRPARSE
+030300     MOVE ZERO                      TO PARM-IDX.                  XRPARSE
+030400     MOVE CSA-N                     TO PARSE-MATCH-Y-N.           XRPARSE
+030500***  POS-SCAN-MAX IS SET BY 050- ... ROUTINE *                    XRPARSE
+030600 300-PARSE-NEXT.                                                  XRPARSE
+030700     ADD 1 TO PARM-IDX                                            XRPARSE
+030800     IF PARM-IDX > PARM-TBL-SIZE                                  XRPARSE
+030900         GO TO 300-PARSE-EXIT                                     XRPARSE
+031000     END-IF.                                                      XRPARSE
+031100     MOVE 1                         TO POS-ANCHOR.                XRPARSE
+031200     MOVE PARM-LEN (PARM-IDX)       TO SCAN-LEN.                  XRPARSE
+031300 300-PARSE-LOOP.                                                  XRPARSE
+031400     ADD 1 TO POS-ANCHOR.                                         XRPARSE
+031500     IF POS-ANCHOR < PARM-SRCH-FROM-POS (PARM-IDX)                XRPARSE
+031600         GO TO 300-PARSE-LOOP                                     XRPARSE
+031700     END-IF.                                                      XRPARSE
+031800     COMPUTE POS-SCAN-END = POS-ANCHOR + SCAN-LEN - 1.            XRPARSE
+031900     IF POS-SCAN-END > POS-SCAN-MAX OR                            XRPARSE
+032000        POS-SCAN-END > PARM-SRCH-TO-POS (PARM-IDX)                XRPARSE
+032100         GO TO 300-PARSE-NEXT                                     XRPARSE
+032200     END-IF.                                                      XRPARSE
+032300 300-PARSE-MATCH.                                                 XRPARSE
+032400     IF SOURCE-FILE-REC (POS-ANCHOR: SCAN-LEN) =                  XRPARSE
+032500        PARM-ENTRY (PARM-IDX) (1:SCAN-LEN)                        XRPARSE
+032600         MOVE CSA-Y TO PARSE-MATCH-Y-N                            XRPARSE
+032700         GO TO 300-PARSE-EXIT                                     XRPARSE
+032800     ELSE                                                         XRPARSE
+032900         GO TO 300-PARSE-LOOP                                     XRPARSE
+033000     END-IF.                                                      XRPARSE
+033100 300-PARSE-EXIT. EXIT.                                            XRPARSE
+033200 EJECT                                                            XRPARSE
+033300*---------------------------------------------------------------* XRPARSE
+033400* READ THE SOURCE FILE                                            XRPARSE
+033500*---------------------------------------------------------------* XRPARSE
+033600 500-READ-SOURCE-FILE.                                            XRPARSE
+033700     READ SOURCE-FILE.                                            XRPARSE
+033800     MOVE CC-SOURCE-FILE TO CC-STATUS.                            XRPARSE
+033900     IF CC-STATUS = CC-OK                                         XRPARSE
+034000         ADD 1      TO AC-SOURCE-FILE                             XRPARSE
+034100***      CLEAR THE PUNCH BYTE, IT CONTAINS A 'V' *                XRPARSE
+034200         MOVE SPACE TO SOURCE-FILE-REC (1:1)                      XRPARSE
+034300     ELSE                                                         XRPARSE
+034400         IF CC-STATUS = CC-EOF                                    XRPARSE
+034500             GO TO 500-READ-SOURCE-FILE-EXIT                      XRPARSE
+034600         ELSE                                                     XRPARSE
+034700             DISPLAY 'ERROR,READ,SOURCE-FILE,CC: ' CC-STATUS      XRPARSE
+034800             PERFORM 999-CANCEL THRU                              XRPARSE
+034900                     999-CANCEL-EXIT                              XRPARSE
+035000         END-IF                                                   XRPARSE
+035100     END-IF.                                                      XRPARSE
+035200 500-READ-SOURCE-FILE-EXIT. EXIT.                                 XRPARSE
+035300 EJECT                                                            XRPARSE
+035400*---------------------------------------------------------------* XRPARSE
+035500* READ THE PARM FILE                                              XRPARSE
+035600*---------------------------------------------------------------* XRPARSE
+035700 510-READ-PARM-FILE.                                              XRPARSE
+035800     DISPLAY 'READING PARM-FILE'.                                 XRPARSE
+035900 510-READ-LOOP.                                                   XRPARSE
+036000     READ PARM-FILE.                                              XRPARSE
+036100     MOVE CC-PARM-FILE TO CC-STATUS.                              XRPARSE
+036200     IF CC-STATUS = CC-OK                                         XRPARSE
+036300         ADD 1 TO AC-PARM-FILE                                    XRPARSE
+036400         DISPLAY 'PARM-REC: ' PARM-REC                            XRPARSE
+036500         PERFORM 511-PROCESS-PARM THRU                            XRPARSE
+036600                 511-PROCESS-PARM-EXIT                            XRPARSE
+036700         GO TO 510-READ-LOOP                                      XRPARSE
+036800     ELSE                                                         XRPARSE
+036900         IF CC-STATUS = CC-EOF                                    XRPARSE
+037000             GO TO 510-READ-PARM-FILE-EXIT                        XRPARSE
+037100         ELSE                                                     XRPARSE
+037200             DISPLAY 'ERROR,READ,PARM-FILE,CC: ' CC-STATUS        XRPARSE
+037300             PERFORM 999-CANCEL THRU                              XRPARSE
+037400                     999-CANCEL-EXIT                              XRPARSE
+037500         END-IF                                                   XRPARSE
+037600     END-IF.                                                      XRPARSE
+037700 510-READ-PARM-FILE-EXIT. EXIT.                                   XRPARSE
+037800 EJECT                                                            XRPARSE
+037900*---------------------------------------------------------------* XRPARSE
+038000* PROCESS PARM                                                    XRPARSE
+038100*---------------------------------------------------------------* XRPARSE
+038200 511-PROCESS-PARM.                                                XRPARSE
+038300     IF P-COBOL-MODE                                              XRPARSE
+038400         MOVE CSA-COBOL TO PROG-MODE                              XRPARSE
+038500         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+038600     END-IF.                                                      XRPARSE
+038700     IF P-TEXT-MODE                                               XRPARSE
+038800         MOVE CSA-TEXT TO PROG-MODE                               XRPARSE
+038900         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+039000     END-IF.                                                      XRPARSE
+039100     IF P-DELIM-COMMA                                             XRPARSE
+039200         MOVE CSA-COMMA TO WS-DELIM                               XRPARSE
+039300         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+039400     END-IF.                                                      XRPARSE
+039500     IF P-DELIM-PERIOD                                            XRPARSE
+039600         MOVE CSA-PERIOD TO WS-DELIM                              XRPARSE
+039700         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+039800     END-IF.                                                      XRPARSE
+039900     IF P-DELIM-SLASH                                             XRPARSE
+040000         MOVE CSA-SLASH TO WS-DELIM                               XRPARSE
+040100         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+040200     END-IF.                                                      XRPARSE
+040300     IF P-QUOTE-INCLUDE                                           XRPARSE
+040400         MOVE CSA-Y TO WS-QUOTE-INCL-Y-N                          XRPARSE
+040500         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+040600     END-IF.                                                      XRPARSE
+040700     IF P-QUOTE-EXCLUDE                                           XRPARSE
+040800         MOVE CSA-N TO WS-QUOTE-INCL-Y-N                          XRPARSE
+040900         GO TO 511-PROCESS-PARM-EXIT                              XRPARSE
+041000     END-IF.                                                      XRPARSE
+041100 511-OVERFLOW.                                                    XRPARSE
+041200     ADD 1              TO PARM-TBL-SIZE.                         XRPARSE
+041300     IF PARM-TBL-SIZE > PARM-TBL-SIZE-MAX                         XRPARSE
+041400         DISPLAY 'ERROR,PARM-TBL OVERFLOW'                        XRPARSE
+041500         PERFORM 999-CANCEL THRU                                  XRPARSE
+041600                 999-CANCEL-EXIT                                  XRPARSE
+041700     END-IF.                                                      XRPARSE
+041800 511-ADD.                                                         XRPARSE
+041900     MOVE PARM-TBL-SIZE TO PARM-IDX.                              XRPARSE
+042000     MOVE ZERO          TO DELIM-AC.                              XRPARSE
+042100     MOVE ZERO          TO POS-TRGT.                              XRPARSE
+042200***                                                               XRPARSE
+042300     MOVE SPACES        TO PARM-ENTRY         (PARM-IDX).         XRPARSE
+042400     MOVE ZERO          TO PARM-LEN           (PARM-IDX).         XRPARSE
+042500     MOVE ZERO          TO PARM-SRCH-FROM-POS (PARM-IDX).         XRPARSE
+042600     MOVE ZERO          TO PARM-SRCH-TO-POS   (PARM-IDX).         XRPARSE
+042700     PERFORM VARYING POS-SRCE FROM 1 BY 1 UNTIL                   XRPARSE
+042800             DELIM-AC > 2    OR                                   XRPARSE
+042900             POS-SRCE  > 80                                       XRPARSE
+043000        IF PARM-REC (POS-SRCE:1) = WS-DELIM                       XRPARSE
+043100            ADD 1 TO DELIM-AC                                     XRPARSE
+043200            MOVE ZERO TO POS-TRGT                                 XRPARSE
+043300        ELSE                                                      XRPARSE
+043400            ADD 1 TO POS-TRGT                                     XRPARSE
+043500            IF DELIM-AC = 0                                       XRPARSE
+043600                MOVE PARM-REC (POS-SRCE:1)                        XRPARSE
+043700                  TO PARM-ENTRY (PARM-IDX) (POS-TRGT:1)           XRPARSE
+043800                MOVE POS-TRGT TO PARM-LEN (PARM-IDX)              XRPARSE
+043900            END-IF                                                XRPARSE
+044000            IF DELIM-AC = 1 OR                                    XRPARSE
+044100               DELIM-AC = 2                                       XRPARSE
+044200                IF POS-TRGT > 2                                   XRPARSE
+044300                    DISPLAY 'ERROR,PARM FROM/TO MUST BE NUMERIC'  XRPARSE
+044400                            ' LENGTH TWO (OR PIC 99)'             XRPARSE
+044500                    PERFORM 999-CANCEL THRU                       XRPARSE
+044600                            999-CANCEL-EXIT                       XRPARSE
+044700                END-IF                                            XRPARSE
+044800                IF PARM-REC (POS-SRCE:1) < '0' OR                 XRPARSE
+044900                   PARM-REC (POS-SRCE:1) > '9'                    XRPARSE
+045000                    DISPLAY 'ERROR,PARM FROM/TO NOT NUMERIC'      XRPARSE
+045100                    PERFORM 999-CANCEL THRU                       XRPARSE
+045200                            999-CANCEL-EXIT                       XRPARSE
+045300                END-IF                                            XRPARSE
+045400            END-IF                                                XRPARSE
+045500            IF DELIM-AC = 1                                       XRPARSE
+045600                MOVE PARM-REC (POS-SRCE:1)                        XRPARSE
+045700                  TO PARM-SRCH-FROM-POS (PARM-IDX) (POS-TRGT:1)   XRPARSE
+045800            END-IF                                                XRPARSE
+045900            IF DELIM-AC = 2                                       XRPARSE
+046000                MOVE PARM-REC (POS-SRCE:1)                        XRPARSE
+046100                  TO PARM-SRCH-TO-POS (PARM-IDX) (POS-TRGT:1)     XRPARSE
+046200            END-IF                                                XRPARSE
+046300        END-IF                                                    XRPARSE
+046400     END-PERFORM.                                                 XRPARSE
+046500     IF DELIM-AC = 3                                              XRPARSE
+046600         IF PARM-SRCH-FROM-POS (PARM-IDX) > POS-SCAN-MAX OR       XRPARSE
+046700            PARM-SRCH-TO-POS   (PARM-IDX) > POS-SCAN-MAX OR       XRPARSE
+046800            PARM-SRCH-TO-POS   (PARM-IDX) <                       XRPARSE
+046900                                PARM-SRCH-FROM-POS (PARM-IDX)     XRPARSE
+047000             DISPLAY 'ERROR,PARM FROM/TO RELATIONAL'              XRPARSE
+047100             PERFORM 999-CANCEL THRU                              XRPARSE
+047200                     999-CANCEL-EXIT                              XRPARSE
+047300         ELSE                                                     XRPARSE
+047400***          ADJUST FROM/TO POS SINCE SOURCE-FILE IS PUNCHED *    XRPARSE
+047500             ADD 1 TO PARM-SRCH-FROM-POS (PARM-IDX)               XRPARSE
+047600             ADD 1 TO PARM-SRCH-TO-POS   (PARM-IDX)               XRPARSE
+047700         END-IF                                                   XRPARSE
+047800     ELSE                                                         XRPARSE
+047900         DISPLAY 'ERROR,PARM NUMBER OF DELIMITERS'                XRPARSE
+048000         PERFORM 999-CANCEL THRU                                  XRPARSE
+048100                 999-CANCEL-EXIT                                  XRPARSE
+048200     END-IF.                                                      XRPARSE
+048300 511-PROCESS-PARM-EXIT. EXIT.                                     XRPARSE
+048400 EJECT                                                            XRPARSE
+048500*---------------------------------------------------------------* XRPARSE
+048600* PRINT REPORT                                                    XRPARSE
+048700*---------------------------------------------------------------* XRPARSE
+048800 700-PRINT.                                                       XRPARSE
+048900     ADD 1 TO AC-LINE.                                            XRPARSE
+049000     IF AC-LINE > CSN-LINES-MAX                                   XRPARSE
+049100         WRITE PRINT-REC FROM HL AFTER ADVANCING TOP-OF-PAGE      XRPARSE
+049200         WRITE PRINT-REC FROM DL AFTER ADVANCING 2 LINES          XRPARSE
+049300         MOVE 3 TO AC-LINE                                        XRPARSE
+049400     ELSE                                                         XRPARSE
+049500         WRITE PRINT-REC FROM DL.                                 XRPARSE
+049600 700-PRINT-EXIT. EXIT.                                            XRPARSE
+049700 EJECT                                                            XRPARSE
+049800*---------------------------------------------------------------* XRPARSE
+049900* OPEN FILES                                                      XRPARSE
+050000*---------------------------------------------------------------* XRPARSE
+050100 800-OPEN.                                                        XRPARSE
+050200     DISPLAY 'OPENING FILES'.                                     XRPARSE
+050300 800-PARM-FILE.                                                   XRPARSE
+050400     OPEN INPUT PARM-FILE.                                        XRPARSE
+050500     MOVE CC-PARM-FILE TO CC-STATUS.                              XRPARSE
+050600     IF CC-STATUS NOT = CC-OK                                     XRPARSE
+050700         DISPLAY 'ERROR,OPEN,PARM-FILE,CC: ' CC-STATUS            XRPARSE
+050800         PERFORM 999-CANCEL THRU                                  XRPARSE
+050900                 999-CANCEL-EXIT                                  XRPARSE
+051000     END-IF.                                                      XRPARSE
+051100 800-SOURCE-FILE.                                                 XRPARSE
+051200     OPEN INPUT SOURCE-FILE.                                      XRPARSE
+051300     MOVE CC-SOURCE-FILE TO CC-STATUS.                            XRPARSE
+051400     IF CC-STATUS NOT = CC-OK                                     XRPARSE
+051500         DISPLAY 'ERROR,OPEN,SOURCE-FILE,CC: ' CC-STATUS          XRPARSE
+051600         PERFORM 999-CANCEL THRU                                  XRPARSE
+051700                 999-CANCEL-EXIT                                  XRPARSE
+051800     END-IF.                                                      XRPARSE
+051900 800-PRINT-FILE.                                                  XRPARSE
+052000     OPEN OUTPUT PRINT-FILE.                                      XRPARSE
+052100 800-OPEN-EXIT. EXIT.                                             XRPARSE
+052200 EJECT                                                            XRPARSE
+052300*---------------------------------------------------------------* XRPARSE
+052400* CLOSE FILES                                                     XRPARSE
+052500*---------------------------------------------------------------* XRPARSE
+052600 850-CLOSE.                                                       XRPARSE
+052700     DISPLAY 'CLOSEING FILES'.                                    XRPARSE
+052800 850-PARM-FILE.                                                   XRPARSE
+052900     CLOSE PARM-FILE.                                             XRPARSE
+053000     MOVE CC-PARM-FILE TO CC-STATUS.                              XRPARSE
+053100     IF CC-STATUS NOT = CC-OK                                     XRPARSE
+053200         DISPLAY 'ERROR,CLOSE,PARM-FILE,CC: ' CC-STATUS           XRPARSE
+053300         PERFORM 999-CANCEL THRU                                  XRPARSE
+053400                 999-CANCEL-EXIT                                  XRPARSE
+053500     END-IF.                                                      XRPARSE
+053600 850-SOURCE-FILE.                                                 XRPARSE
+053700     CLOSE SOURCE-FILE.                                           XRPARSE
+053800     MOVE CC-SOURCE-FILE TO CC-STATUS.                            XRPARSE
+053900     IF CC-STATUS NOT = CC-OK                                     XRPARSE
+054000         DISPLAY 'ERROR,CLOSE,SOURCE-FILE,CC: ' CC-STATUS         XRPARSE
+054100         PERFORM 999-CANCEL THRU                                  XRPARSE
+054200                 999-CANCEL-EXIT                                  XRPARSE
+054300     END-IF.                                                      XRPARSE
+054400 850-PRINT-FILE.                                                  XRPARSE
+054500     CLOSE PRINT-FILE.                                            XRPARSE
+054600 850-CLOSE-EXIT. EXIT.                                            XRPARSE
+054700 EJECT                                                            XRPARSE
+054800*---------------------------------------------------------------* XRPARSE
+054900* STATISTICS                                                      XRPARSE
+055000*---------------------------------------------------------------* XRPARSE
+055100 900-STATISTICS.                                                  XRPARSE
+055200     DISPLAY 'PARM-FILE READ     : ' AC-PARM-FILE.                XRPARSE
+055300     DISPLAY 'SOURCE-FILE READ   : ' AC-SOURCE-FILE.              XRPARSE
+055400 900-STATISTICS-EXIT. EXIT.                                       XRPARSE
+055500*---------------------------------------------------------------* XRPARSE
+055600* CANCEL ROUTINE                                                  XRPARSE
+055700*---------------------------------------------------------------* XRPARSE
+055800 999-CANCEL.                                                      XRPARSE
+055900     DISPLAY 'XRPARSE,ABNORMAL END * * * * * * * *'.              XRPARSE
+056000     PERFORM 900-STATISTICS THRU                                  XRPARSE
+056100             900-STATISTICS-EXIT.                                 XRPARSE
+056200     COMPUTE CSN-ZERO = CSN-ZERO / CSN-ZERO.                      XRPARSE
+056300 999-CANCEL-EXIT. EXIT.                                           XRPARSE

@@ -1,0 +1,173 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. XRB0003.
+       AUTHOR. TONY REY.
+       INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+       DATE-WRITTEN. 04/04/91.
+       DATE-COMPILED.
+       REMARKS. PROCESS "WMP PROCLIB" - CS ISAM TO VSAM PROCESS.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-370.
+       OBJECT-COMPUTER.  IBM-370.
+       SPECIAL-NAMES. C01 IS TOP-OF-PAGE.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-FILE            ASSIGN TO UT-S-INFILE.
+           SELECT PRINT-FILE         ASSIGN TO UT-S-PRINT.
+       DATA DIVISION.
+       FILE SECTION.
+      *---------------------------------------------------------------*
+       FD  IN-FILE
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  IN-REC              PIC X(81).
+       01  IN-REC-R.
+           05  FILLER          PIC X(01).
+           05  I-SL-SL         PIC X(02).
+           05  I-ASTER         PIC X(01).
+           05  FILLER          PIC X(77).
+       01  IN-REC-R2.
+           05  FILLER          PIC X(01).
+           05  FILLER          PIC X(08).
+           05  I-ZONE          PIC X(20).
+           05  FILLER          PIC X(52).
+      *---------------------------------------------------------------*
+       FD  PRINT-FILE
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  PRINT-REC          PIC X(133).
+      *===============================================================*
+       WORKING-STORAGE SECTION.
+      *===============================================================*
+       01  SW-PRINT-PROC-Y-N     PIC X(01)        VALUE 'Y'.
+       01  SW-PRINT-PGM-Y-N      PIC X(01)        VALUE 'Y'.
+      *---------------------------------------------------------------*
+       01  AC-EXEC               PIC 9(03)        VALUE ZERO.
+       01  AC-PROC               PIC 9(03)        VALUE ZERO.
+       01  AC-PGM                PIC 9(03)        VALUE ZERO.
+       01  AC-DD                 PIC 9(03)        VALUE ZERO.
+       01  AC-DSN                PIC 9(03)        VALUE ZERO.
+       01  AC-DSORG              PIC 9(03)        VALUE ZERO.
+       01  AC-ISAM               PIC 9(03)        VALUE ZERO.
+       01  AC-PRIME              PIC 9(03)        VALUE ZERO.
+      *---------------------------------------------------------------*
+       01  FH-IN-REC-PROC        PIC X(81)        VALUE SPACES.
+       01  FH-IN-REC-PGM         PIC X(81)        VALUE SPACES.
+       01  FH-IN-REC-DSN         PIC X(81)        VALUE SPACES.
+      *---------------------------------------------------------------*
+       01  AC-LINE               PIC 9(03)        VALUE 99.
+       01  HL                    PIC X(81)        VALUE
+           ' XRB0003 CROSS REFERENCE'.
+       01  DL                    PIC X(81)        VALUE SPACES.
+      *===============================================================*
+       PROCEDURE DIVISION.
+      *===============================================================*
+       MAIN-PROGRAM.
+           OPEN INPUT IN-FILE.
+           OPEN OUTPUT PRINT-FILE.
+           PERFORM 100-PROCESS THRU
+                   100-PROCESS-EXIT.
+           CLOSE IN-FILE
+                 PRINT-FILE.
+           STOP RUN.
+      *---------------------------------------------------------------*
+       100-PROCESS.
+           READ IN-FILE AT END
+              GO TO 100-PROCESS-EXIT.
+       100-SL.
+           IF I-SL-SL = '//' AND
+              I-ASTER NOT = '*'
+               NEXT SENTENCE
+           ELSE
+               GO TO 100-PROCESS.
+       100-PROC.
+           INSPECT IN-REC TALLYING AC-PROC FOR ALL ' PROC '.
+           IF AC-PROC  > ZERO
+               MOVE IN-REC     TO FH-IN-REC-PROC
+               MOVE ZERO       TO AC-PROC
+               MOVE 'N'        TO SW-PRINT-PROC-Y-N
+               GO TO 100-PROCESS
+           ELSE
+               NEXT SENTENCE.
+       100-PGM.
+           INSPECT IN-REC TALLYING AC-EXEC FOR ALL ' EXEC '.
+           INSPECT IN-REC TALLYING AC-PGM  FOR ALL 'PGM='.
+           IF AC-PGM  > ZERO AND
+              AC-EXEC > ZERO
+               MOVE IN-REC     TO FH-IN-REC-PGM
+               MOVE ZERO       TO AC-PGM
+                                  AC-EXEC
+               MOVE 'N'        TO SW-PRINT-PGM-Y-N
+               GO TO 100-PROCESS
+           ELSE
+               MOVE ZERO       TO AC-PGM
+                                  AC-EXEC.
+       100-DSN.
+           INSPECT I-ZONE TALLYING AC-DD   FOR ALL ' DD '.
+           INSPECT IN-REC TALLYING AC-DSN  FOR ALL 'DSN='.
+           IF AC-DSN > ZERO OR
+              AC-DD  > ZERO
+               MOVE IN-REC     TO FH-IN-REC-DSN
+               MOVE ZERO       TO AC-DSN
+               MOVE ZERO       TO AC-DD
+               GO TO 100-PROCESS
+           ELSE
+               NEXT SENTENCE.
+       100-ISAM.
+      *    INSPECT IN-REC TALLYING AC-ISAM FOR ALL 'ISAM'.
+      *    INSPECT IN-REC TALLYING AC-PRIME FOR ALL 'PRIME'.
+      *    IF AC-ISAM  > ZERO OR
+      *       AC-PRIME > ZERO
+      *        MOVE ZERO TO AC-ISAM
+      *        MOVE ZERO TO AC-PRIME
+      *    ELSE
+      *        GO TO 100-PROCESS.
+       100-DSORG.
+           INSPECT IN-REC TALLYING AC-DSORG FOR ALL 'DSORG=IS'.
+           IF AC-DSORG > ZERO
+               MOVE ZERO TO AC-DSORG
+           ELSE
+               GO TO 100-PROCESS.
+      ***
+      ***
+       100-PRINT.
+       100-PRINT-PROC.
+           IF SW-PRINT-PROC-Y-N = 'N'
+               MOVE 'Y'    TO SW-PRINT-PROC-Y-N
+               MOVE SPACES TO DL
+               PERFORM 700-PRINT THRU
+                       700-PRINT-EXIT
+               MOVE FH-IN-REC-PROC TO DL
+               PERFORM 700-PRINT THRU
+                       700-PRINT-EXIT
+           ELSE
+               NEXT SENTENCE.
+       100-PRINT-PGM.
+           IF SW-PRINT-PGM-Y-N = 'N'
+               MOVE 'Y'       TO SW-PRINT-PGM-Y-N
+               MOVE FH-IN-REC-PGM TO DL
+               PERFORM 700-PRINT THRU
+                       700-PRINT-EXIT
+           ELSE
+               NEXT SENTENCE.
+       100-PRINT-DSN-DSORG-MATCH.
+           MOVE FH-IN-REC-DSN TO DL.
+           PERFORM 700-PRINT THRU
+                   700-PRINT-EXIT.
+       100-PRINT-ISAM.
+      *    MOVE IN-REC TO DL.
+      *    PERFORM 700-PRINT THRU
+      *            700-PRINT-EXIT.
+       100-REPEAT.
+           GO TO 100-PROCESS.
+       100-PROCESS-EXIT. EXIT.
+      *---------------------------------------------------------------*
+       700-PRINT.
+           ADD 1 TO AC-LINE.
+           IF AC-LINE > 60
+               WRITE PRINT-REC FROM HL AFTER ADVANCING TOP-OF-PAGE
+               WRITE PRINT-REC FROM DL AFTER ADVANCING 2 LINES
+               MOVE 3 TO AC-LINE
+           ELSE
+               WRITE PRINT-REC FROM DL.
+       700-PRINT-EXIT. EXIT.

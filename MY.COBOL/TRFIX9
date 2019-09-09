@@ -1,0 +1,137 @@
+000100 ID DIVISION.
+000200 PROGRAM-ID. TRFIX9.
+000300 AUTHOR. TONY REY.
+000400 DATE-WRITTEN. 07/03/91.
+000500 DATE-COMPILED.
+000600*================================================================*
+000700* PROGRAM NARRATIVE
+000800*================================================================*
+000900* THIS PROGRAM CONVERTS PRE TERMINAL EXPANSION 72 BYTE DATA
+001000* TO POST TERMINAL EXPANSION FORMAT.
+001100*================================================================*
+001200 ENVIRONMENT DIVISION.
+001300 CONFIGURATION SECTION.
+001400 SOURCE-COMPUTER. IBM-370.
+001500 OBJECT-COMPUTER. IBM-370.
+001600 INPUT-OUTPUT SECTION.
+001700 FILE-CONTROL.
+001800     SELECT  FIX-IN   ASSIGN TO   UT-S-FIXIN.
+001900     SELECT  FIX-OUT  ASSIGN TO   UT-S-FIXOUT.
+002000 DATA DIVISION.
+002100 FILE SECTION.
+002200*----------------------------------------------------------------*
+002300 FD  FIX-IN
+002400*----------------------------------------------------------------*
+002500     LABEL RECORDS ARE STANDARD
+002600     BLOCK CONTAINS 0 RECORDS.
+002700 01  FIX-IN-REC               PIC X(72).
+002800*----------------------------------------------------------------*
+002900 FD  FIX-OUT
+003000*----------------------------------------------------------------*
+003100     LABEL RECORDS ARE STANDARD
+003200     BLOCK CONTAINS 0 RECORDS.
+003300 01  FIX-OUT-REC              PIC X(72).
+003400 EJECT
+003500*================================================================*
+003600 WORKING-STORAGE SECTION.
+003700*================================================================*
+003800 77  IN-EOF           PIC X VALUE 'N'.
+003810 77  AC-FIX-IN        PIC 9(6) VALUE ZERO.
+003820 77  AC-FIX-OUT       PIC 9(6) VALUE ZERO.
+003900*----------------------------------------------------------------*
+004000* INPUT RECORD
+004100*----------------------------------------------------------------*
+004200 01  WS-INPUT-RECORD.
+004300     05  WS-INPUT-01-25                  PIC X(25).
+004400     05  WS-INPUT-26-33                  PIC X(08).
+004500     05  WS-INPUT-34-34                  PIC X(01).
+004600     05  WS-INPUT-35-72                  PIC X(38).
+004610*----------------------------------------------------------------*
+004620* OUTPUT RECORD
+004630*----------------------------------------------------------------*
+004800 01  WS-OUTPUT-RECORD.
+004900     05  WS-OUTPUT-01-25                 PIC X(25).
+005000     05  WS-OUTPUT-26-34                 PIC X(09).
+005100     05  WS-OUTPUT-35-35                 PIC X(01).
+005200     05  WS-OUTPUT-36-72.
+005210         10  FILLER                      PIC X(35).
+005220         10  WS-OUTPUT-71-71             PIC X(01).
+005230         10  WS-OUTPUT-72-72             PIC X(01).
+005300*----------------------------------------------------------------*
+005400 01  ACCT.
+005500     05  ACCT123.
+005600         10 ACCT1                        PIC X(01).
+005700         10 ACCT23                       PIC X(02).
+005800     05  ACCT45678.
+005900         10  ACCT4                       PIC X(01).
+006000         10  ACCT5678                    PIC X(04).
+006100*----------------------------------------------------------------*
+006200 01  NEWACCT.
+006300     05  NEWACCT123                      PIC X(03).
+006400     05  NEWACCT4                        PIC X(01).
+006500     05  NEWACCT56789.
+006600         10  NEWACCT5678                 PIC X(04).
+006700         10  NEWACCT9                    PIC X(01).
+006800 EJECT
+006900*================================================================*
+007000 PROCEDURE DIVISION.
+007100*================================================================*
+007200 MAIN-PROGRAM.
+007210 OPEN-FILES.
+007300     OPEN INPUT  FIX-IN
+007400          OUTPUT FIX-OUT.
+007410 MAIN-PROCESS.
+007500     PERFORM 150-READ-REC THRU
+007600             150-READ-REC-EXIT.
+007700     PERFORM 100-PROCESS-RTN THRU
+007800             100-PROCESS-RTN-EXIT
+007900             UNTIL IN-EOF = 'Y'.
+007901 FINISH-PROGRAM.
+007910     DISPLAY 'RECORDS IN : ' AC-FIX-IN.
+007920     DISPLAY 'RECORDS OUT: ' AC-FIX-OUT.
+008000     CLOSE FIX-IN
+008100           FIX-OUT.
+008200     STOP RUN.
+008300 EJECT
+008400*----------------------------------------------------------------*
+008500 100-PROCESS-RTN.
+008600     MOVE WS-INPUT-01-25  TO WS-OUTPUT-01-25.
+008700     MOVE WS-INPUT-34-34  TO WS-OUTPUT-35-35.
+008800     MOVE WS-INPUT-35-72  TO WS-OUTPUT-36-72.
+008820     MOVE WS-OUTPUT-72-72 TO WS-OUTPUT-71-71.
+008830     MOVE SPACES          TO WS-OUTPUT-72-72.
+008840 100-PROCESS-ACCOUNT.
+008900     MOVE WS-INPUT-26-33  TO ACCT.
+009000     IF ACCT1 = '1' OR
+009100        ACCT1 = '2'
+009200***      BALANCE SHEET ACCOUNT *
+009300         MOVE ACCT TO WS-OUTPUT-26-34
+009400     ELSE
+009500***      P AND L ACCOUNTS *
+009600         MOVE ACCT123   TO NEWACCT123
+009700         MOVE ZERO      TO NEWACCT4
+009800         MOVE ACCT45678 TO NEWACCT56789
+009900         IF NEWACCT9 = SPACE
+010000             MOVE ZERO    TO NEWACCT9
+010100             MOVE NEWACCT TO WS-OUTPUT-26-34
+010200         ELSE
+010300             MOVE NEWACCT TO WS-OUTPUT-26-34.
+010400 100-WRITE.
+010500     PERFORM 200-WRITE-REC THRU
+010600             200-WRITE-REC-EXIT.
+010700 100-READ.
+010800     PERFORM 150-READ-REC THRU
+010900             150-READ-REC-EXIT.
+011000 100-PROCESS-RTN-EXIT. EXIT.
+011100*----------------------------------------------------------------*
+011200 150-READ-REC.
+011300     READ FIX-IN INTO WS-INPUT-RECORD
+011400       AT END MOVE 'Y' TO IN-EOF
+011401              GO TO 150-READ-REC-EXIT.
+011410     ADD 1 TO AC-FIX-IN.
+011500 150-READ-REC-EXIT. EXIT.
+011600*----------------------------------------------------------------*
+011700 200-WRITE-REC.
+011800     WRITE FIX-OUT-REC FROM WS-OUTPUT-RECORD.
+011810     ADD 1 TO AC-FIX-OUT.
+011900 200-WRITE-REC-EXIT. EXIT.

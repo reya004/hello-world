@@ -1,0 +1,104 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTD01.
+       INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+       DATE-WRITTEN.  MAR 19, 1991.
+       DATE-COMPILED.
+       REMARKS. CICS WORK SHOP 1.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER. IBM-370.
+       OBJECT-COMPUTER. IBM-370.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  WS-IN.
+           05 WS-IN-TRAN-ID   PIC X(04).
+           05 FILLER          PIC X(01).
+           05 WS-IN-SEC-KEY   PIC X(08).
+       01  WS-IN-LEN          PIC S9(04) COMP VALUE +13.
+
+       01  MSG01.
+           05  FILLER         PIC X(50)  VALUE
+               '**  NO SECURITY INFORMATION FOUND FOR:'.
+           05  MSG01-END1     PIC X(01).
+           05  MSG01-END2     PIC X(01).
+           05  MSG01-SEC-KEY  PIC X(08).
+
+       01  MSG02.
+           05  FILLER         PIC X(60)  VALUE
+               'THE FOLLOWING SECURITY INFORMATION HAS BEEN FOUND:'.
+           05  MSG02-END1     PIC X(01).
+           05  MSG02-END2     PIC X(01).
+           05  FILLER         PIC X(15)  VALUE
+               'SECURITY KEY:'.
+           05  MSG02-SEC-KEY  PIC X(08).
+           05  MSG02-END3     PIC X(01).
+           05  MSG02-END4     PIC X(01).
+           05  FILLER         PIC X(15)  VALUE
+               'ACCESS CODE:'.
+           05  MSG02-SEC-CODE PIC X(03).
+           05  MSG02-END5     PIC X(01).
+           05  MSG02-END6     PIC X(01).
+           05  FILLER         PIC X(15)  VALUE
+               'OPERATOR NAME: '.
+           05  MSG02-SEC-NAME PIC X(25).
+
+       COPY DFHBMSCA.
+
+       LINKAGE SECTION.
+       01  PTRLIST.
+           05  FILLER         PIC S9(08) COMP.
+           05  SEC-TBL-PTR    PIC S9(08) COMP.
+       01  SEC-TBL.
+           05  SEC-INDEX-MAX  PIC S9(04) COMP.
+           05  SEC-TBL OCCURS 1 TO 100 TIMES
+                       DEPENDING ON SEC-INDEX-MAX
+                       INDEXED BY SEC-INDEX.
+                10 SEC-KEY    PIC X(08).
+                10 SEC-CODE   PIC X(03).
+                10 SEC-NAME   PIC X(25).
+
+       PROCEDURE DIVISION.
+       MAIN-PROGRAM.
+           EXEC CICS LOAD PROGRAM ('TESTSEC')
+                SET (SEC-TBL-PTR)
+                END-EXEC.
+           MOVE DFHBMPNL TO MSG01-END1.
+           MOVE DFHBMPNL TO MSG01-END2.
+           MOVE DFHBMPNL TO MSG02-END1.
+           MOVE DFHBMPNL TO MSG02-END2.
+           MOVE DFHBMPNL TO MSG02-END3.
+           MOVE DFHBMPNL TO MSG02-END4.
+           MOVE DFHBMPNL TO MSG02-END5.
+           MOVE DFHBMPNL TO MSG02-END6.
+           EXEC CICS RECEIVE INTO (WS-IN)
+                LENGTH (WS-IN-LEN)
+                END-EXEC.
+           PERFORM 100-SEARCH THRU
+                   100-SEARCH-EXIT
+                   VARYING SEC-INDEX FROM 1 BY 1
+                   UNTIL WS-IN-SEC-KEY = SEC-KEY (SEC-INDEX) OR
+                   SEC-INDEX = SEC-INDEX-MAX.
+           IF WS-IN-SEC-KEY = SEC-KEY (SEC-INDEX)
+               MOVE SEC-KEY  (SEC-INDEX) TO MSG02-SEC-KEY
+               MOVE SEC-CODE (SEC-INDEX) TO MSG02-SEC-CODE
+               MOVE SEC-NAME (SEC-INDEX) TO MSG02-SEC-NAME
+               EXEC CICS SEND TEXT FROM (MSG02)
+                    LENGTH (147)
+                    ERASE
+                    FREEKB
+                    END-EXEC
+           ELSE
+               MOVE WS-IN-SEC-KEY TO MSG01-SEC-KEY
+               EXEC CICS SEND TEXT FROM (MSG01)
+                    LENGTH (60)
+                    ERASE
+                    FREEKB
+                    END-EXEC.
+       MAIN-PROGRAM-END.
+           EXEC CICS RETURN
+                END-EXEC.
+           STOP RUN.
+
+       100-SEARCH.
+       100-SEARCH-EXIT. EXIT.

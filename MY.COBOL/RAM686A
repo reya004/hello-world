@@ -1,0 +1,141 @@
+         PRINT ON,NOGEN                                                 00000010
+RAM686A  DFHMSD TYPE=MAP,MODE=INOUT,STORAGE=AUTO,SUFFIX=                00000020
+         TITLE 'HAZARDOUS MATERIALS INFORMATION '                       00000030
+RAM686A  DFHMDI SIZE=(24,80),COLUMN=1,LINE=1,DATA=FIELD,               *00000040
+               TIOAPFX=YES,OBFMT=NO                                     00000050
+         DFHMDF POS=(1,1),LENGTH=13,INITIAL='SCREEN: LHM05',           *00000060
+               ATTRB=(ASKIP,NORM)                                       00000070
+         DFHMDF POS=(1,27),LENGTH=19,INITIAL='LINEHAUL TRIP SHEET',    *00000080
+               ATTRB=(PROT,NORM)                                        00000090
+         DFHMDF POS=(1,63),LENGTH=5,INITIAL='DATE:',ATTRB=(PROT,       *00000100
+               NORM)                                                    00000110
+* H-DT-MDY                                                              00000120
+DFH0001  DFHMDF POS=(1,69),LENGTH=8,ATTRB=(ASKIP,NORM)                  00000130
+         DFHMDF POS=(1,78),LENGTH=1,ATTRB=(ASKIP,NORM)                  00000140
+         DFHMDF POS=(2,22),LENGTH=31,INITIAL='HAZARDOUS MATERIALS INFOR*00000150
+               MATION',ATTRB=(PROT,NORM)                                00000160
+         DFHMDF POS=(2,63),LENGTH=5,INITIAL='TIME:',ATTRB=(PROT,       *00000170
+               NORM)                                                    00000180
+* H-TM-HMS                                                              00000190
+DFH0002  DFHMDF POS=(2,69),LENGTH=8,ATTRB=(ASKIP,NORM)                  00000200
+         DFHMDF POS=(2,78),LENGTH=1,ATTRB=(ASKIP,NORM)                  00000210
+         DFHMDF POS=(4,1),LENGTH=20,INITIAL='TERMINAL ALPHA CODE:',    *00000220
+               ATTRB=(PROT,NORM)                                        00000230
+* TERM                                                                  00000240
+DFH0003  DFHMDF POS=(4,22),LENGTH=3,ATTRB=(ASKIP,NORM)                  00000250
+         DFHMDF POS=(4,26),LENGTH=1,ATTRB=(PROT,NORM)                   00000260
+         DFHMDF POS=(4,28),LENGTH=13,INITIAL='TRIP NUMBER :',          *00000270
+               ATTRB=(PROT,NORM)                                        00000280
+* TRIP                                                                  00000290
+DFH0004  DFHMDF POS=(4,42),LENGTH=5,ATTRB=(ASKIP,NORM)                  00000300
+         DFHMDF POS=(4,48),LENGTH=1,ATTRB=(PROT,NORM)                   00000310
+         DFHMDF POS=(6,5),LENGTH=53,INITIAL='1ST                      2*00000320
+               ND                      3RD',ATTRB=(PROT,               *00000330
+               NORM)                                                    00000340
+         DFHMDF POS=(7,1),LENGTH=76,INITIAL='TL# PLACARD      POS CLASS*00000350
+                ; PLACARD      POS CLASS ; PLACARD      POS CLASS',    *00000360
+               ATTRB=(PROT,NORM)                                        00000370
+         DFHMDF POS=(8,1),LENGTH=2,INITIAL='#1',ATTRB=(PROT,           *00000380
+               NORM)                                                    00000390
+* TL1A-PL                                                               00000400
+DFH0005  DFHMDF POS=(8,5),LENGTH=12,ATTRB=(UNPROT,NORM,                *00000410
+               IC)                                                      00000420
+* TL1A-POS                                                              00000430
+DFH0006  DFHMDF POS=(8,18),LENGTH=2,ATTRB=(UNPROT,NORM)                 00000440
+         DFHMDF POS=(8,21),LENGTH=0,ATTRB=(PROT,NORM)                   00000450
+* TL1A-CLS                                                              00000460
+DFH0007  DFHMDF POS=(8,22),LENGTH=4,ATTRB=(UNPROT,NORM)                 00000470
+         DFHMDF POS=(8,27),LENGTH=0,ATTRB=(PROT,NORM)                   00000480
+         DFHMDF POS=(8,28),LENGTH=1,INITIAL=';',ATTRB=(PROT,           *00000490
+               NORM)                                                    00000500
+* TL1B-PL                                                               00000510
+DFH0008  DFHMDF POS=(8,30),LENGTH=12,ATTRB=(UNPROT,NORM)                00000520
+* TL1B-POS                                                              00000530
+DFH0009  DFHMDF POS=(8,43),LENGTH=2,ATTRB=(UNPROT,NORM)                 00000540
+         DFHMDF POS=(8,46),LENGTH=0,ATTRB=(PROT,NORM)                   00000550
+* TL1B-CLS                                                              00000560
+DFH0010  DFHMDF POS=(8,47),LENGTH=4,ATTRB=(UNPROT,NORM)                 00000570
+         DFHMDF POS=(8,52),LENGTH=0,ATTRB=(PROT,NORM)                   00000580
+         DFHMDF POS=(8,53),LENGTH=1,INITIAL=';',ATTRB=(PROT,           *00000590
+               NORM)                                                    00000600
+* TL1C-PL                                                               00000610
+DFH0011  DFHMDF POS=(8,55),LENGTH=12,ATTRB=(UNPROT,NORM)                00000620
+* TL1C-PLC                                                              00000630
+DFH0012  DFHMDF POS=(8,68),LENGTH=2,ATTRB=(UNPROT,NORM)                 00000640
+         DFHMDF POS=(8,71),LENGTH=0,ATTRB=(PROT,NORM)                   00000650
+* TL1C-CL                                                               00000660
+DFH0013  DFHMDF POS=(8,72),LENGTH=4,ATTRB=(UNPROT,NORM)                 00000670
+         DFHMDF POS=(8,77),LENGTH=1,ATTRB=(PROT,NORM)                   00000680
+         DFHMDF POS=(9,1),LENGTH=2,INITIAL='#2',ATTRB=(PROT,           *00000690
+               NORM)                                                    00000700
+* TL2A-PL                                                               00000710
+DFH0014  DFHMDF POS=(9,5),LENGTH=12,ATTRB=(UNPROT,NORM)                 00000720
+* TL2A-POS                                                              00000730
+DFH0015  DFHMDF POS=(9,18),LENGTH=2,ATTRB=(UNPROT,NORM)                 00000740
+         DFHMDF POS=(9,21),LENGTH=0,ATTRB=(PROT,NORM)                   00000750
+* TL2A-CL                                                               00000760
+DFH0016  DFHMDF POS=(9,22),LENGTH=4,ATTRB=(UNPROT,NORM)                 00000770
+         DFHMDF POS=(9,27),LENGTH=0,ATTRB=(PROT,NORM)                   00000780
+         DFHMDF POS=(9,28),LENGTH=1,INITIAL=';',ATTRB=(PROT,           *00000790
+               NORM)                                                    00000800
+* TL2B-PL                                                               00000810
+DFH0017  DFHMDF POS=(9,30),LENGTH=12,ATTRB=(UNPROT,NORM)                00000820
+* TL2B-POS                                                              00000830
+DFH0018  DFHMDF POS=(9,43),LENGTH=2,ATTRB=(UNPROT,NORM)                 00000840
+         DFHMDF POS=(9,46),LENGTH=0,ATTRB=(PROT,NORM)                   00000850
+* TL2B-CL                                                               00000860
+DFH0019  DFHMDF POS=(9,47),LENGTH=4,ATTRB=(UNPROT,NORM)                 00000870
+         DFHMDF POS=(9,52),LENGTH=0,ATTRB=(PROT,NORM)                   00000880
+         DFHMDF POS=(9,53),LENGTH=1,INITIAL=';',ATTRB=(PROT,           *00000890
+               NORM)                                                    00000900
+* TL2C-PL                                                               00000910
+DFH0020  DFHMDF POS=(9,55),LENGTH=12,ATTRB=(UNPROT,NORM)                00000920
+* TL2C-POS                                                              00000930
+DFH0021  DFHMDF POS=(9,68),LENGTH=2,ATTRB=(UNPROT,NORM)                 00000940
+         DFHMDF POS=(9,71),LENGTH=0,ATTRB=(PROT,NORM)                   00000950
+* TL2C-CL                                                               00000960
+DFH0022  DFHMDF POS=(9,72),LENGTH=4,ATTRB=(UNPROT,NORM)                 00000970
+         DFHMDF POS=(9,77),LENGTH=1,ATTRB=(PROT,NORM)                   00000980
+         DFHMDF POS=(10,1),LENGTH=2,INITIAL='#3',ATTRB=(PROT,          *00000990
+               NORM)                                                    00001000
+* TL3A-PL                                                               00001010
+DFH0023  DFHMDF POS=(10,5),LENGTH=12,ATTRB=(UNPROT,NORM)                00001020
+* TL3A-POS                                                              00001030
+DFH0024  DFHMDF POS=(10,18),LENGTH=2,ATTRB=(UNPROT,NORM)                00001040
+         DFHMDF POS=(10,21),LENGTH=0,ATTRB=(PROT,NORM)                  00001050
+* TL3A-CL                                                               00001060
+DFH0025  DFHMDF POS=(10,22),LENGTH=4,ATTRB=(UNPROT,NORM)                00001070
+         DFHMDF POS=(10,27),LENGTH=0,ATTRB=(PROT,NORM)                  00001080
+         DFHMDF POS=(10,28),LENGTH=1,INITIAL=';',ATTRB=(PROT,          *00001090
+               NORM)                                                    00001100
+* TL3B-PL                                                               00001110
+DFH0026  DFHMDF POS=(10,30),LENGTH=12,ATTRB=(UNPROT,NORM)               00001120
+* TL3B-POS                                                              00001130
+DFH0027  DFHMDF POS=(10,43),LENGTH=2,ATTRB=(UNPROT,NORM)                00001140
+         DFHMDF POS=(10,46),LENGTH=0,ATTRB=(PROT,NORM)                  00001150
+* TL3B-CL                                                               00001160
+DFH0028  DFHMDF POS=(10,47),LENGTH=4,ATTRB=(UNPROT,NORM)                00001170
+         DFHMDF POS=(10,52),LENGTH=0,ATTRB=(PROT,NORM)                  00001180
+         DFHMDF POS=(10,53),LENGTH=1,INITIAL=';',ATTRB=(PROT,          *00001190
+               NORM)                                                    00001200
+* TL3C-PL                                                               00001210
+DFH0029  DFHMDF POS=(10,55),LENGTH=12,ATTRB=(UNPROT,NORM)               00001220
+* TL3C-POS                                                              00001230
+DFH0030  DFHMDF POS=(10,68),LENGTH=2,ATTRB=(UNPROT,NORM)                00001240
+         DFHMDF POS=(10,71),LENGTH=0,ATTRB=(PROT,NORM)                  00001250
+* TL3C-CL                                                               00001260
+DFH0031  DFHMDF POS=(10,72),LENGTH=4,ATTRB=(UNPROT,NORM)                00001270
+         DFHMDF POS=(10,77),LENGTH=1,ATTRB=(PROT,NORM)                  00001280
+         DFHMDF POS=(13,1),LENGTH=11,INITIAL='MORE (Y/N):',            *00001290
+               ATTRB=(PROT,NORM)                                        00001300
+* MORE                                                                  00001310
+DFH0032  DFHMDF POS=(13,13),LENGTH=1,ATTRB=(UNPROT,NORM)                00001320
+         DFHMDF POS=(13,15),LENGTH=1,ATTRB=(PROT,NORM)                  00001330
+         DFHMDF POS=(23,1),LENGTH=74,INITIAL='ENTER=PROCESS   PF1=HELP *00001340
+                 PF3=RETURN   PF4=SPCL INSTR   PF7=BWD   PF8=FWD',     *00001350
+               ATTRB=(PROT,NORM)                                        00001360
+* MESSAGE                                                               00001370
+DFH0033  DFHMDF POS=(24,1),LENGTH=79,JUSTIFY=(LEFT,BLANK),             *00001380
+               ATTRB=(PROT,BRT)                                         00001390
+         DFHMSD TYPE=FINAL                                              00001400
+         END                                                            00001410

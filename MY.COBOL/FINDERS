@@ -1,0 +1,582 @@
+<<FINDERST>>
+TRAP ON
+PUSH
+SET MODE NUNUM
+: ====================================================================*
+: WRITE THE INITIAL SCREEN
+: ====================================================================*
+<<BEGIN>>
+WRITE
+'   RPF TO MAINTAIN THE BILLBACK/LOADING ALLOWANCE CUSTOMER # FILES'
+'   ---------------------------------------------------------------'
+'   WHEN VIEWING A FILE, MAINTENANCE CAN BE PERFORMED BY USING THE'
+'   FOLLOWING FUNCTIONS:'
+' '
+'    - DELETE - PLACE A "D" ON THE LINE # TO BE DELETED, HIT ENTER'
+'    - CHANGE - OVERTYPE THE OLD DATA WITH THE NEW DATA'
+'    - ADD    - PLACE AN "I" ON A LINE # TO INSERT A LINE, HIT ENTER'
+'               OR PLACE AN "R" ON A LINE # TO REPEAT THAT LINE THEN'
+'               OVERTYPE THE OLD DATA WITH THE NEW DATA'
+'    - PAGING - PFKEY 8 PAGES FORWARD, PFKEY 7 PAGES BACKWARD.'
+'   ---------------------------------------------------------------'
+'   TO UPDATE A FILE, TYPE ONE OF THE FOLLOWING AND HIT ENTER:'
+' '
+'    | GENERAL | EMERSON | FASSON  | SONY    | KMART   | HOUSTON |'
+'    | MASTER  |         |         |         |         | EXIT    |'
+'   ---------------------------------------------------------------'
+'   WHEN COMPLETELY FINISHED, TYPE "GO" '
+ENDWRITE
+: ====================================================================*
+: READ THE SELECTION
+: ====================================================================*
+READ L4
+IF (L4 EQ 'EXIT')
+  GOTO <<LAST>>
+ENDIF
+IF (L4 EQ 'GENERAL')
+    GOTO <<GENERAL>>
+ENDIF
+IF (L4 EQ 'EMERSON')
+    GOTO <<EMERSON>>
+ENDIF
+IF (L4 EQ 'FASSON')
+    GOTO <<FASSON>>
+ENDIF
+IF (L4 EQ 'SONY')
+    GOTO <<SONY>>
+ENDIF
+IF (L4 EQ 'KMART')
+    GOTO <<KMART>>
+ENDIF
+IF (L4 EQ 'HOUSTON')
+    GOTO <<HOUSTON>>
+ENDIF
+IF (L4 EQ 'MASTER')
+    GOTO <<MASTER>>
+ENDIF
+:
+RESPONSE 'AN INVALID RESPONSE WAS ENTERED.  TRY AGAIN'
+GOTO <<BEGIN>>
+: --------------------------------------------------------------------*
+: GENERAL WAS SELECTED
+: --------------------------------------------------------------------*
+<<GENERAL>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB100),ASIS
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB10040,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+: --------------------------------------------------------------------*
+: EMERSON WAS SELECTED
+: --------------------------------------------------------------------*
+<<EMERSON>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB105)
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB105.FINDERS,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+: --------------------------------------------------------------------*
+: FASSON WAS SELECTED
+: --------------------------------------------------------------------*
+<<FASSON>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB106)
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB106.FINDERS,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+: --------------------------------------------------------------------*
+: SONY WAS SELECTED
+: --------------------------------------------------------------------*
+<<SONY>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB107)
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB107.FINDERS,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+: --------------------------------------------------------------------*
+: KMART WAS SELECTED
+: --------------------------------------------------------------------*
+<<KMART>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB109)
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB109.FINDERS,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+: --------------------------------------------------------------------*
+: HOUSTON WAS SELECTED
+: --------------------------------------------------------------------*
+<<HOUSTON>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB115)
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB115.FINDERS,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+: --------------------------------------------------------------------*
+: MASTER WAS SELECTED
+: --------------------------------------------------------------------*
+<<MASTER>>
+TRAP ON
+IMP DSN=WAI.WM.BBLIB(BKPBB116)
+SUBMIT
+IF (TC NE 0)
+    RESPONSE 'FILE CANNOT BE BACKED UP PRIOR TO UPDATE'
+    GOTO <<LAST>>
+ENDIF
+TRAP ON
+IMP DSN=WAI.WM.BB116.FINDERS,ASIS
+IF (TC NE 0)
+    RESPONSE 'FILE UNAVAILABLE - TRY AGAIN LATER'
+    GOTO <<LAST>>
+ENDIF
+ATTACH
+GOTO <<DONE>>
+:
+:
+: ====================================================================*
+: "GO" WAS ENTERED
+: ====================================================================*
+: DETERMINE WHAT TO DO WITH CHANGES
+: ====================================================================*
+<<DONE>>
+WRITE '   *************************************************************'
+WRITE '   * ENTER "SAVEP" TO SAVE THE CHANGES, PRINT A COPY OF THE    *'
+WRITE '   *        UPDATED FILE AND EXIT THE UTILITY                  *'
+WRITE '   *************************************************************'
+WRITE '   * ENTER "SAVEN" TO SAVE THE CHANGES AND EXIT THE UTILITY    *'
+WRITE '   *        WITHOUT PRINTING A COPY OF THE FILE                *'
+WRITE '   *************************************************************'
+WRITE '   * ENTER "EXITP" TO NOT SAVE THE CHANGES BUT PRINT A COPY OF *'
+WRITE '   *        THE FILE AND EXIT THE UTILITY                      *'
+WRITE '   *************************************************************'
+WRITE '   * ENTER "EXITN" TO NOT SAVE THE CHANGES AND NOT PRINT A     *'
+WRITE '   *        COPY OF THE FILE AND EXIT THE UTILITY              *'
+WRITE '   *************************************************************'
+READ L5
+: --------------------------------------------------------------------*
+: SAVEN WAS SELECTED
+: --------------------------------------------------------------------*
+IF (L5 EQ 'SAVEN')
+    IF (L4 EQ 'GENERAL')
+        GOTO <<SAVEN01>>
+    ENDIF
+    IF (L4 EQ 'EMERSON')
+        GOTO <<SAVEN02>>
+    ENDIF
+    IF (L4 EQ 'FASSON')
+        GOTO <<SAVEN03>>
+    ENDIF
+    IF (L4 EQ 'SONY')
+        GOTO <<SAVEN04>>
+    ENDIF
+    IF (L4 EQ 'KMART')
+        GOTO <<SAVEN05>>
+    ENDIF
+    IF (L4 EQ 'HOUSTON')
+        GOTO <<SAVEN06>>
+    ENDIF
+    IF (L4 EQ 'MASTER')
+        GOTO <<SAVEN07>>
+    ENDIF
+ENDIF
+: --------------------------------------------------------------------*
+: SAVEP WAS SELECTED
+: --------------------------------------------------------------------*
+IF (L5 EQ 'SAVEP')
+    IF (L4 EQ 'GENERAL')
+        GOTO <<SAVEP01>>
+    ENDIF
+    IF (L4 EQ 'EMERSON')
+        GOTO <<SAVEP02>>
+    ENDIF
+    IF (L4 EQ 'FASSON')
+        GOTO <<SAVEP03>>
+    ENDIF
+    IF (L4 EQ 'SONY')
+        GOTO <<SAVEP04>>
+    ENDIF
+    IF (L4 EQ 'KMART')
+        GOTO <<SAVEP05>>
+    ENDIF
+    IF (L4 EQ 'HOUSTON')
+        GOTO <<SAVEP06>>
+    ENDIF
+    IF (L4 EQ 'MASTER')
+        GOTO <<SAVEP07>>
+    ENDIF
+ENDIF
+: --------------------------------------------------------------------*
+:  EXITP WAS SELECTED
+: --------------------------------------------------------------------*
+IF (L5 EQ 'EXITP')
+    IF (L4 EQ 'GENERAL')
+        DEL
+        GOTO <<PGENERAL>>
+    ENDIF
+    IF (L4 EQ 'EMERSON')
+        DEL
+        GOTO <<PEMERSON>>
+    ENDIF
+    IF (L4 EQ 'FASSON')
+        DEL
+        GOTO <<PFASSON>>
+    ENDIF
+    IF (L4 EQ 'SONY')
+        DEL
+        GOTO <<PSONY>>
+    ENDIF
+    IF (L4 EQ 'KMART')
+        DEL
+        GOTO <<PKMART>>
+    ENDIF
+    IF (L4 EQ 'HOUSTON')
+        DEL
+        GOTO <<PHOUSTON>>
+    ENDIF
+ENDIF
+: --------------------------------------------------------------------*
+:  EXITN WAS SELECTED
+: --------------------------------------------------------------------*
+IF (L5 EQ 'EXITN')
+    RESPONSE 'TABLE WAS NOT UPDATED'
+    DEL
+    GOTO <<LAST>>
+ENDIF
+: --------------------------------------------------------------------*
+:  INVALID RESPONSE
+: --------------------------------------------------------------------*
+RESPONSE 'AN INVALID SELECTION WAS MADE - TRY AGAIN'
+GOTO <<DONE>>
+:
+:
+: ====================================================================*
+: SAVEN SECTION
+: --------------------------------------------------------------------*
+: SAVEN AND GENERAL WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN01>>
+TRAP ON
+EXP DSN=WAI.WM.BB10040,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB100SRT)
+SUBMIT
+RESPONSE 'BB100 FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SAVEN AND EMERSON WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN02>>
+TRAP ON
+EXP DSN=WAI.WM.BB105.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB105SRT)
+SUBMIT
+RESPONSE 'EMERSON FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SAVEN AND FASSON WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN03>>
+TRAP ON
+EXP DSN=WAI.WM.BB106.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB106SRT)
+SUBMIT
+RESPONSE 'FASSON FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SAVEN AND SONY WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN04>>
+TRAP ON
+EXP DSN=WAI.WM.BB107.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB107SRT)
+SUBMIT
+RESPONSE 'SONY FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SAVEN AND KMART WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN05>>
+TRAP ON
+EXP DSN=WAI.WM.BB109.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB109SRT)
+SUBMIT
+RESPONSE 'KMART FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SAVEN AND HOUSTON WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN06>>
+TRAP ON
+EXP DSN=WAI.WM.BB115.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB115SRT)
+SUBMIT
+RESPONSE 'HOUSTON WIRE & CABLE FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SAVEN AND MASTER WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEN07>>
+TRAP ON
+EXP DSN=WAI.WM.BB116.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB116SRT)
+SUBMIT
+RESPONSE 'MASTER BUILDER FILE WAS UPDATED AND SORTED'
+DEL
+GOTO <<LAST>>
+:
+:
+: ====================================================================*
+: SAVEP SECTION
+: --------------------------------------------------------------------*
+: SAVEP AND GENERAL WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP01>>
+TRAP ON
+EXP DSN=WAI.WM.BB10040,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB100SRT)
+SUBMIT
+DEL
+GOTO <<PGENERAL>>
+: --------------------------------------------------------------------*
+: SAVEP AND EMERSON WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP02>>
+TRAP ON
+EXP DSN=WAI.WM.BB105.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB105SRT)
+SUBMIT
+DEL
+GOTO <<PEMERSON>>
+: --------------------------------------------------------------------*
+: SAVEP AND FASSON WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP03>>
+TRAP ON
+EXP DSN=WAI.WM.BB106.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB106SRT)
+SUBMIT
+DEL
+GOTO <<PFASSON>>
+: --------------------------------------------------------------------*
+: SAVEP AND SONY WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP04>>
+TRAP ON
+EXP DSN=WAI.WM.BB107.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB107SRT)
+SUBMIT
+DEL
+GOTO <<PSONY>>
+: --------------------------------------------------------------------*
+: SAVEP AND KMART WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP05>>
+TRAP ON
+EXP DSN=WAI.WM.BB109.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB109SRT)
+SUBMIT
+DEL
+GOTO <<PKMART>>
+: --------------------------------------------------------------------*
+: SAVEP AND HOUSTON WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP06>>
+TRAP ON
+EXP DSN=WAI.WM.BB115.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB115SRT)
+SUBMIT
+DEL
+GOTO <<PHOUSTON>>
+: --------------------------------------------------------------------*
+: SAVEP AND MASTER WERE SELECTED
+: --------------------------------------------------------------------*
+<<SAVEP07>>
+TRAP ON
+EXP DSN=WAI.WM.BB116.FINDERS,INPUT=*
+IF (TC NE 0)
+    RESPONSE 'FILE UPDATE NOT SUCCESSFUL - CALL HELP DESK'
+    GOTO <<LAST>>
+ENDIF
+IMP DSN=WAI.WM.BBLIB(BB116SRT)
+SUBMIT
+DEL
+GOTO <<PMASTER>>
+:
+:
+: ====================================================================*
+: PSECTION
+: --------------------------------------------------------------------*
+: GENERAL
+: --------------------------------------------------------------------*
+<<PGENERAL>>
+IMP DSN=WAI.WM.BBLIB(PGENERAL),ASIS
+SUBMIT
+IMP DSN=WAI.WM.BBLIB(PGENL2),ASIS
+SUBMIT
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: EMERSON
+: --------------------------------------------------------------------*
+<<PEMERSON>>
+IMP DSN=WAI.WM.BBLIB(PEMERSON),ASIS
+SUBMIT
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: FASSON
+: --------------------------------------------------------------------*
+<<PFASSON>>
+IMP DSN=WAI.WM.BBLIB(PFASSON),ASIS
+SUBMIT
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: SONY
+: --------------------------------------------------------------------*
+<<PSONY>>
+IMP DSN=WAI.WM.BBLIB(PSONY),ASIS
+SUBMIT
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: KMART
+: --------------------------------------------------------------------*
+<<PKMART>>
+IMP DSN=WAI.WM.BBLIB(PKMART),ASIS
+SUBMIT
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: HOUSTON
+: --------------------------------------------------------------------*
+<<PHOUSTON>>
+IMP DSN=WAI.WM.BBLIB(PHOUSTON),ASIS
+SUBMIT
+GOTO <<LAST>>
+: --------------------------------------------------------------------*
+: MASTER
+: --------------------------------------------------------------------*
+<<PMASTER>>
+IMP DSN=WAI.WM.BBLIB(PMASTER),ASIS
+SUBMIT
+GOTO <<LAST>>
+:
+:
+: ====================================================================*
+: EXIT CLIST SECTION
+: ====================================================================*
+<<LAST>>
+POP
+STOP

@@ -1,0 +1,188 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FMBXX0.
+       AUTHOR. TONY REY.
+       INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+       DATE-WRITTEN. 01/13/97.
+       DATE-COMPILED.
+      *================================================================*
+      * PROGRAM NARRATIVE
+      *================================================================*
+      * COPYBOOK PRE-PROCESSOR TO COMMENT OUT DB2 ITEMS.
+      *
+      *================================================================*
+      * MODIFICATION LOG
+      *================================================================*
+      * MM/DD/YY  PROGRAMMER  PROBLEM/RFS NUMBER: DESCRIPTION
+      * --------  ----------  ------------------------------------------
+CH0001* 01/13/97  TONY REY    999999: WRITE PROGRAM.
+      *================================================================*
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-370.
+       OBJECT-COMPUTER.  IBM-370.
+       SPECIAL-NAMES. C01 IS TOP-OF-PAGE.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-FILE            ASSIGN TO UT-S-INFILE
+                                     FILE STATUS IS CC-IN-FILE.
+           SELECT OUT-FILE           ASSIGN TO UT-S-OUTFILE
+                                     FILE STATUS IS CC-OUT-FILE.
+       DATA DIVISION.
+       FILE SECTION.
+      *---------------------------------------------------------------*
+       FD  IN-FILE
+           RECORDING MODE IS F
+           RECORD CONTAINS 80 CHARACTERS
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+        01  IN-REC.
+            05  IN-SEQ           PIC X(06).
+            05  IN-COMMENT-IND   PIC X(01).
+            05  IN-COBOL         PIC X(65).
+            05  IN-SEQ           PIC X(08).
+      *---------------------------------------------------------------*
+       FD  OUT-FILE
+           RECORDING MODE IS F
+           RECORD CONTAINS 80 CHARACTERS
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD.
+       01  OUT-REC               PIC X(80).
+       EJECT
+      *===============================================================*
+       WORKING-STORAGE SECTION.
+      *===============================================================*
+       77  FILLER                    PIC X(40)
+           VALUE '*** FMBXX0 WORKING STORAGE ***'.
+      *---------------------------------------------------------------*
+       77  CC-IN-FILE                PIC XX          VALUE SPACES.
+       77  CC-OUT-FILE               PIC XX          VALUE SPACES.
+       COPY CCFILE.
+      *---------------------------------------------------------------*
+       77  WS-IDX1                       PIC 9(6).
+       77  WS-IDX2                       PIC 9(6).
+       77  WS-IDX3                       PIC 9(6).
+       01  WS-STRING-TBL.
+           05  WS-STRING                 OCCURS 10 TIMES
+                                         PIC X(30).
+      *---------------------------------------------------------------*
+       01  WS-DB2-FLAG-AREA              PIC X VALUE SPACE.
+           88  WS-DB2-FLAG-OFF                 VALUE ' '.
+           88  WS-DB2-FLAG-ON                  VALUE '1'.
+       01  WS-COBOL-FLAG-AREA            PIC X VALUE SPACE.
+           88  WS-COBOL-FLAG-OFF               VALUE ' '.
+           88  WS-COBOL-FLAG-ON                VALUE '1'.
+      *---------------------------------------------------------------*
+       01  AC-RECORDS.
+           05  FILLER            PIC X(20)        VALUE
+               'INFILE RECORDS : '.
+           05  AC-IN-REC         PIC 9(7)         VALUE ZERO.
+           05  FILLER            PIC X(10)        VALUE SPACES.
+           05  FILLER            PIC X(20)        VALUE
+               'OUTFILE RECORDS: '.
+           05  AC-OUT-REC        PIC 9(7)         VALUE ZERO.
+      *---------------------------------------------------------------*
+       77  FILLER                    PIC X(40)
+           VALUE '*** FMBXX0 WORKING STORAGE END ***'.
+       EJECT
+      *===============================================================*
+       PROCEDURE DIVISION.
+      *===============================================================*
+       MAIN-PROGRAM.
+           DISPLAY '*** STARTING FMBXX0 ***'.
+           OPEN INPUT  IN-FILE.
+           OPEN OUTPUT OUT-FILE.
+
+           PERFORM 600-READ-IN-FILE THRU 600-EXIT.
+           PERFORM 100-MAIN-PROCESS THRU 100-EXIT
+                   UNTIL CC-IN-FILE = CC-EOF.
+
+           CLOSE IN-FILE
+                 OUT-FILE.
+           DISPLAY AC-RECORDS.
+           DISPLAY '*** ENDING FMBXX0 ***'.
+           STOP RUN.
+       EJECT
+      *---------------------------------------------------------------*
+       100-MAIN-PROCESS.
+           IF IN-COMMENT-IND > SPACE
+           OR IN-COBOL       = SPACES
+               GO TO 100-WRITE
+           END-IF.
+
+           UNSTRING IN-COBOL DELIMITED BY ALL ' ' OR '.' OR '(' OR ')'
+               INTO WS-STRING(01)
+                  , WS-STRING(02)
+                  , WS-STRING(03)
+                  , WS-STRING(04)
+                  , WS-STRING(05)
+                  , WS-STRING(06)
+                  , WS-STRING(07)
+                  , WS-STRING(08)
+                  , WS-STRING(09)
+                  , WS-STRING(10)
+               ON OVERFLOW CONTINUE
+           END-UNSTRING.
+
+           PERFORM VARYING WS-IDX1 FROM 1 BY 1
+             UNTIL WS-IDX1 > 8
+             COMPUTE WS-IDX2 = WS-IDX1 + 1
+             COMPUTE WS-IDX3 = WS-IDX1 + 2
+             IF  WS-STRING(WS-IDX1) = 'EXEC'
+             AND WS-STRING(WS-IDX2) = 'SQL'
+             AND WS-STRING(WS-IDX3) = 'DECLARE'
+                 SET WS-DB2-FLAG-ON    TO TRUE
+             END-IF
+           END-PERFORM.
+
+           IF  WS-DB2-FLAG-ON
+               MOVE '*' TO IN-COMMENT-IND
+           END-IF.
+
+       100-WRITE.
+           PERFORM 650-WRITE-OUT-REC THRU 650-EXIT.
+
+           PERFORM VARYING WS-IDX1 FROM 1 BY 1
+             UNTIL WS-IDX1 > 10
+             IF  WS-STRING(WS-IDX1)  = 'END-EXEC'
+                 SET WS-DB2-FLAG-OFF   TO TRUE
+             END-IF
+           END-PERFORM.
+
+           PERFORM 600-READ-IN-FILE THRU 600-EXIT.
+
+       100-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+       600-READ-IN-FILE.
+           READ IN-FILE.
+           MOVE CC-IN-FILE TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+              ADD 1 TO AC-IN-REC
+           ELSE
+               IF CC-STATUS = CC-EOF
+                   CONTINUE
+               ELSE
+                   DISPLAY 'ERROR,READ,IN-FILE,CC: ' CC-STATUS
+                   PERFORM 999-CANCEL THRU 999-EXIT
+               END-IF
+           END-IF.
+       600-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+       650-WRITE-OUT-REC.
+           WRITE OUT-REC FROM IN-REC.
+           MOVE CC-OUT-FILE TO CC-STATUS.
+           IF CC-STATUS = CC-OK
+               ADD 1 TO AC-OUT-REC
+           ELSE
+               DISPLAY 'ERROR,WRITE,OUT-REC,CC: ' CC-STATUS
+               PERFORM 999-CANCEL THRU 999-EXIT
+           END-IF.
+       650-EXIT. EXIT.
+       EJECT
+      *---------------------------------------------------------------*
+       999-CANCEL.
+           DISPLAY 'FMBXX0,ABNORMAL END * * * * * * * *'.
+           MOVE +16 TO RETURN-CODE.
+           STOP RUN.
+       999-EXIT. EXIT.

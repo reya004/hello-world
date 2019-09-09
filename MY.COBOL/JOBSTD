@@ -1,0 +1,320 @@
+000100 IDENTIFICATION DIVISION.
+000200 PROGRAM-ID. JOBSTD.
+000300 AUTHOR. TONY REY.
+000400 INSTALLATION. WATKINS ASSOCIATED INDUSTRIES.
+000500 DATE-WRITTEN. 01/13/92.
+000600 DATE-COMPILED.
+000700*================================================================*
+000800* PROGRAM NARRATIVE
+000900*================================================================*
+001000* PRODUCE A LIST OF NON STANDARD JOB NAMES.
+001100*================================================================*
+001200 ENVIRONMENT DIVISION.
+001300 CONFIGURATION SECTION.
+001400 SOURCE-COMPUTER.  IBM-370.
+001500 OBJECT-COMPUTER.  IBM-370.
+001600 SPECIAL-NAMES. C01 IS TOP-OF-PAGE.
+001700 INPUT-OUTPUT SECTION.
+001800 FILE-CONTROL.
+001900     SELECT IN-FILE            ASSIGN TO UT-S-INFILE
+002000                               FILE STATUS IS IN-CC.
+002100     SELECT PRINT-FILE         ASSIGN TO UT-S-PRINT.
+002200 DATA DIVISION.
+002300 FILE SECTION.
+002400*---------------------------------------------------------------*
+002500 FD  IN-FILE
+002600     BLOCK CONTAINS 0 RECORDS
+002700     LABEL RECORDS ARE STANDARD.
+002800 01  IN-REC              PIC X(81).
+002900 01  IN-REC-R.
+003000     05  FILLER          PIC X(01).
+003100     05  IN-SL-SL        PIC X(02).
+003200     05  IN-LINE.
+003300         10 IN-ASTER     PIC X(01).
+003400         10 FILLER       PIC X(69).
+003500     05  IN-LINE-POS     REDEFINES IN-LINE
+003600                         OCCURS 70 TIMES
+003700                         PIC X(01).
+003800     05  IN-SEQ          PIC X(08).
+003900*---------------------------------------------------------------*
+004000 FD  PRINT-FILE
+004100     BLOCK CONTAINS 0 RECORDS
+004200     LABEL RECORDS ARE STANDARD.
+004300 01  PRINT-REC          PIC X(133).
+004400 EJECT
+004500*===============================================================*
+004600 WORKING-STORAGE SECTION.
+004700*===============================================================*
+004800 77  IN-CC                 PIC XX VALUE SPACES.
+004900 77  XREF-CC               PIC XX VALUE SPACES.
+005000 COPY CCFILE.
+005100*---------------------------------------------------------------*
+005200 77  SW-PROCESS-SYMBOLIC   PIC X            VALUE 'N'.
+005300 77  SW-EXEC-NAKED-Y-N     PIC X(01)        VALUE 'N'.
+005400*---------------------------------------------------------------*
+005500 77  AC-LEFT-PAREN         PIC 99           VALUE ZERO.
+005600 77  AC-RIGHT-PAREN        PIC 99           VALUE ZERO.
+005700 77  AC-LEFT-QUOTE         PIC 99           VALUE ZERO.
+005800 77  AC-RIGHT-QUOTE        PIC 99           VALUE ZERO.
+005900 01  AC-RECORDS.
+006000     05  FILLER            PIC X(20)        VALUE
+006100         ' IN RECORDS: '.
+006200     05  AC-IN             PIC 9(7)         VALUE ZERO.
+006300*---------------------------------------------------------------*
+006400 01  POS-TALLY.
+006500     05  POS-SPACES        PIC 9(03)        VALUE ZERO.
+006600     05  POS-JOB           PIC 9(03)        VALUE ZERO.
+006700     05  POS-EXEC          PIC 9(03)        VALUE ZERO.
+006800     05  POS-PGM           PIC 9(03)        VALUE ZERO.
+006900     05  POS-DD            PIC 9(03)        VALUE ZERO.
+007000     05  POS-DSN           PIC 9(03)        VALUE ZERO.
+007100     05  POS-SYSOUT        PIC 9(03)        VALUE ZERO.
+007200     05  POS-COMMENT       PIC 9(03)        VALUE ZERO.
+007300*---------------------------------------------------------------*
+007400* OUT TABLE WORK
+007500*---------------------------------------------------------------*
+007600 01  OUT-TBL.
+007700     05  FILLER          PIC X(03).
+007800     05  OUT-LINE        PIC X(70).
+007900     05  OUT-LINE-POS    REDEFINES OUT-LINE
+008000                         OCCURS 70 TIMES
+008100                         PIC X(01).
+008200     05  OUT-SEQ         PIC X(08).
+008300***
+008400 77  OUT-IDX             PIC 999 VALUE ZERO.
+008500 77  OUT-IDX-MAX         PIC 999 VALUE 70.
+008600***
+008700 77  IN-IDX              PIC 999 VALUE ZERO.
+008800 77  IN-IDX2             PIC 999 VALUE ZERO.
+008900 77  IN-IDX-MAX          PIC 999 VALUE 70.
+009000***
+009100 77  FH-IN-IDX-GET-XXX   PIC 999 VALUE ZERO.
+009200*---------------------------------------------------------------*
+009300* COMPARE TABLE WORK
+009400*---------------------------------------------------------------*
+009500 01  COMPARE-TBL.
+009600     05  COMPARE-ITEM    PIC X(70).
+009700     05  COMPARE-POS     REDEFINES COMPARE-ITEM
+009800                         OCCURS 70 TIMES
+009900                         PIC X(01).
+010000***
+010100 77  COMPARE-LEN         PIC 99 VALUE ZERO.
+010200 77  COMPARE-IDX         PIC 999 VALUE ZERO.
+010300 77  COMPARE-IDX-MAX     PIC 999 VALUE 70.
+010400***
+010500 77  MATCH-IDX           PIC 999 VALUE ZERO.
+010600*---------------------------------------------------------------*
+010700 01  AC-LINE               PIC 9(03)        VALUE 99.
+010800***
+010900 01  HL.
+011000     05  FILLER            PIC X(01)        VALUE SPACES.
+011100     05  FILLER            PIC X(45)        VALUE SPACES.
+011200     05  FILLER            PIC X(40)        VALUE
+011300         'JOBSTD - NON STANDARD JOB NAMES'.
+011400     05  FILLER            PIC X(45)        VALUE SPACES.
+011500***
+011600 01  DL.
+011700     05  FILLER            PIC X(01)        VALUE SPACES.
+011800     05  DL-JOB            PIC X(08)       VALUE SPACES.
+011900     05  DL-X              PIC X(124)       VALUE SPACES.
+012000*---------------------------------------------------------------*
+012100 01  RH-X-REC.
+012200     05 RH-JOB.
+012300        10 RH-JOB-DIV      PIC X(02)        VALUE SPACES.
+012400        10 RH-JOB-AP-AREA  PIC X(02)        VALUE SPACES.
+012500        10 RH-JOB-TYPE     PIC X(01)        VALUE SPACES.
+012600           88 VALID-JOB-TYPE VALUE 'I' 'D' 'U' 'S' 'J' '0'.
+012700        10 RH-JOB-NO1      PIC X(01)        VALUE SPACES.
+012800           88 VALID-NO1      VALUE '0' '1' '2' '3' '4'
+012900                                   '5' '6' '7' '8' '9'.
+013000        10 RH-JOB-NO2      PIC X(01)        VALUE SPACES.
+013100           88 VALID-NO2      VALUE '0' '1' '2' '3' '4'
+013200                                   '5' '6' '7' '8' '9'.
+013300        10 RH-JOB-NO3      PIC X(01)        VALUE SPACES.
+013400           88 VALID-NO3      VALUE '0' '1' '2' '3' '4'
+013500                                   '5' '6' '7' '8' '9'.
+013600 EJECT
+013700*===============================================================*
+013800 PROCEDURE DIVISION.
+013900*===============================================================*
+014000 MAIN-PROGRAM.
+014100 START-PROGRAM.
+014200     OPEN INPUT IN-FILE.
+014300     OPEN OUTPUT PRINT-FILE.
+014400 MAIN-PROCESS.
+014500     PERFORM 100-PARSE THRU
+014600             100-PARSE-EXIT.
+014700 FINISH-PROGRAM.
+014800     MOVE AC-RECORDS TO DL.
+014900     PERFORM 700-PRINT THRU
+015000             700-PRINT-EXIT.
+015100     CLOSE IN-FILE
+015200           PRINT-FILE.
+015300     STOP RUN.
+015400*---------------------------------------------------------------*
+015500 100-PARSE.
+015600 100-READ.
+015700     READ IN-FILE.
+015800     MOVE IN-CC TO CC-STATUS.
+015900     IF CC-STATUS = CC-OK
+016000         ADD 1 TO AC-IN
+016100     ELSE
+016200         IF CC-STATUS = CC-EOF
+016300             GO TO 100-PARSE-EXIT
+016400         ELSE
+016500             DISPLAY 'ERROR,READ,IN,CC: ' CC-STATUS
+016600             PERFORM 999-CANCEL THRU
+016700                     999-CANCEL-EXIT.
+016800 100-COMMENT-BYPASS.
+016900     IF IN-SL-SL     = '//' AND
+017000        IN-ASTER NOT = '*'
+017100         NEXT SENTENCE
+017200     ELSE
+017300         GO TO 100-PARSE.
+017400 100-JOB.
+017500     MOVE ' JOB ' TO COMPARE-ITEM.
+017600     MOVE  5      TO COMPARE-LEN.
+017700     PERFORM 150-FIND THRU
+017800             150-FIND-EXIT.
+017900     MOVE MATCH-IDX TO POS-JOB.
+018000     IF POS-JOB > 2 AND
+018100        POS-JOB < 15
+018200***      GET JOB NAME *
+018300         MOVE 1 TO IN-IDX
+018400         PERFORM 200-GET-MOVE THRU
+018500                 200-GET-MOVE-EXIT
+018600         MOVE OUT-LINE TO RH-JOB
+018700     ELSE
+018800         GO TO 100-PARSE.
+018900 100-JOB-STD.
+019000     IF VALID-JOB-TYPE AND
+019100        VALID-NO1      AND
+019200        VALID-NO2      AND
+019300        VALID-NO3
+019400         NEXT SENTENCE
+019500     ELSE
+019600         MOVE RH-JOB TO DL-JOB
+019700         PERFORM 700-PRINT THRU
+019800                 700-PRINT-EXIT.
+019900 100-REITERATE.
+020000     GO TO 100-PARSE.
+020100 100-PARSE-EXIT. EXIT.
+020200*---------------------------------------------------------------*
+020300* FIND COMPARE-ITEM WITHIN IN-LINE. IF MATCH, MATCH-IDX WILL
+020400* POINT TO STARTING POSITION OF COMPARE-ITEM WITHIN IN-LINE.
+020500* IF NO MATCH, MATCH-IDX WILL BE SET TO ZERO.
+020600*
+020700* ENTRY POINTS TO THIS ROUTINE ARE 150-FIND, AND 150-FIND-EP2.
+020800* IF A STARTING LOCATION IS KNOWN, THE '150-FIND-EP2' ENTRY
+020900* IS USED.
+021000*---------------------------------------------------------------*
+021100 150-FIND.
+021200     MOVE 1    TO IN-IDX.
+021300 150-FIND-EP2.
+021400     MOVE ZERO TO MATCH-IDX.
+021500 150-LOOP.
+021600     IF IN-LINE-POS (IN-IDX) = COMPARE-POS (1)
+021700         PERFORM 175-FIND THRU
+021800                 175-FIND-EXIT
+021900         IF MATCH-IDX > ZERO
+022000***          WE HAD A MATCH - EXIT *
+022100             GO TO 150-FIND-EXIT
+022200         ELSE
+022300             NEXT SENTENCE
+022400     ELSE
+022500         NEXT SENTENCE.
+022600 150-REITERATE.
+022700     COMPUTE IN-IDX = IN-IDX + 1
+022800     IF IN-IDX > IN-IDX-MAX
+022900         NEXT SENTENCE
+023000     ELSE
+023100         GO TO 150-LOOP.
+023200 150-FIND-EXIT. EXIT.
+023300*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*
+023400* IF WE HAVE A MATCH, THE POSITION IN-IDX PASSED BY 150-FIND
+023500* WILL BE SAVED IN MATCH-IDX.
+023600*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*
+023700 175-FIND.
+023800 175-FIND-LEN-EQ-1.
+023900     IF COMPARE-LEN = 1
+024000***      WE HAVE A MATCH - LET'S MARK POSITION *
+024100         MOVE IN-IDX TO MATCH-IDX
+024200         GO TO 175-FIND-EXIT
+024300     ELSE
+024400         NEXT SENTENCE.
+024500 175-FIND-LEN-GT-1.
+024600     COMPUTE IN-IDX2 = IN-IDX + 1.
+024700     MOVE 2 TO COMPARE-IDX.
+024800 175-LOOP.
+024900     IF IN-LINE-POS (IN-IDX2) = COMPARE-POS (COMPARE-IDX)
+025000         IF COMPARE-IDX = COMPARE-LEN
+025100             MOVE IN-IDX TO MATCH-IDX
+025200             GO TO 175-FIND-EXIT
+025300         ELSE
+025400             COMPUTE IN-IDX2     = IN-IDX2 + 1
+025500             COMPUTE COMPARE-IDX = COMPARE-IDX + 1
+025600             IF IN-IDX2 > IN-IDX-MAX
+025700                 NEXT SENTENCE
+025800             ELSE
+025900                 GO TO 175-LOOP
+026000     ELSE
+026100         NEXT SENTENCE.
+026200 175-FIND-EXIT. EXIT.
+026300*---------------------------------------------------------------*
+026400* GET AND MOVE AN ITEM
+026500*---------------------------------------------------------------*
+026600 200-GET-MOVE.
+026700     MOVE 1      TO OUT-IDX.
+026800     MOVE SPACES TO OUT-LINE.
+026900     MOVE ZERO   TO AC-LEFT-PAREN
+027000                    AC-RIGHT-PAREN.
+027100     MOVE IN-IDX TO FH-IN-IDX-GET-XXX.
+027200 200-LOOP.
+027300 200-CHECK-IF-DONE.
+027400     IF IN-IDX > IN-IDX-MAX
+027500         GO TO 200-GET-MOVE-EXIT
+027600     ELSE
+027700         IF IN-LINE-POS(IN-IDX) = ' '
+027800             GO TO 200-GET-MOVE-EXIT
+027900         ELSE
+028000             IF IN-LINE-POS(IN-IDX) = ',' AND
+028100                AC-LEFT-PAREN       = AC-RIGHT-PAREN
+028200                 GO TO 200-GET-MOVE-EXIT
+028300             ELSE
+028400                 NEXT SENTENCE.
+028500 200-MOVE.
+028600     MOVE IN-LINE-POS (IN-IDX) TO OUT-LINE-POS (OUT-IDX).
+028700     MOVE IN-IDX               TO FH-IN-IDX-GET-XXX.
+028800     IF IN-LINE-POS (IN-IDX) = '('
+028900         COMPUTE AC-LEFT-PAREN = AC-LEFT-PAREN + 1
+029000     ELSE
+029100         IF IN-LINE-POS (IN-IDX) = ')'
+029200             COMPUTE AC-RIGHT-PAREN = AC-RIGHT-PAREN + 1
+029300         ELSE
+029400             NEXT SENTENCE.
+029500 200-INCREMENT.
+029600     ADD 1 TO IN-IDX
+029700              OUT-IDX.
+029800 200-REITERATE.
+029900     GO TO 200-LOOP.
+030000 200-GET-MOVE-EXIT. EXIT.
+030100*---------------------------------------------------------------*
+030200* PRINT REPORT
+030300*---------------------------------------------------------------*
+030400 700-PRINT.
+030500     ADD 1 TO AC-LINE.
+030600     IF AC-LINE > 60
+030700         WRITE PRINT-REC FROM HL AFTER ADVANCING TOP-OF-PAGE
+030800         WRITE PRINT-REC FROM DL AFTER ADVANCING 2 LINES
+030900         MOVE 3 TO AC-LINE
+031000     ELSE
+031100         WRITE PRINT-REC FROM DL.
+031200 700-PRINT-EXIT. EXIT.
+031300*---------------------------------------------------------------*
+031400* CANCEL ROUTINE
+031500*---------------------------------------------------------------*
+031600 999-CANCEL.
+031700     DISPLAY 'JOBSTD,ABNORMAL END * * * * * * * *'.
+031800     MOVE +16 TO RETURN-CODE.
+031900     STOP RUN.
+032000 999-CANCEL-EXIT. EXIT.
