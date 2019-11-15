@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostMe</title>
+  <link rel="shortcut icon" type="image/x-icon" title="-+-" href="fish.ico" />
+  
+  <style type="text/css" media="screen">
+    body {font-family:verdana, sans-serif; color:#666; background:#fafafa; padding:20px; text-align:left;}
+    #page {text-align:left; max-width:600px; margin:0 auto;} 
+    h1 {font-size:16px; font-weight:normal; text-align:center;}
+    label {font-size:16px;}
+    label i {font-style:normal; display:inline-block; text-align:right; width:100px;}
+    label textarea {vertical-align:top;}
+    button {margin-left:105px; padding:5px; margin-top:5px; font-size:16px;}
+    input, textarea {width:400px; font-size:16px; font-family: courier, "courier new", monospace; margin:0 0 5px 0; padding:5px; border:1px solid #eee;}
+    select {margin:0 0 5px 0;}
+    @media (min-width:300px) and (max-width: 768px) {
+      input, textarea {width:100%;}
+      label i {display:block; width:auto; text-align:left;}
+      button {display:block; margin:0;}
+    }
+  </style>
+  
+  <script type="text/javascript">
+  
+    // Current date - http://stackoverflow.com/a/4929629/412329
+    var today = new Date();
+    var dayNo = today.getDay();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //January is 0!
+    var yyyy = today.getFullYear();
+    var hh = today.getHours();
+    var mm = today.getMinutes();
+    var ss = today.getSeconds();
+    var day = getDay(dayNo);
+
+    if(dd<10) {
+        dd='0'+dd
+    } 
+
+    if(mm<10) {
+        mm='0'+mm
+    } 
+
+    today = day + ' ' + yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + mm + ':' + ss;
+
+    function saveFormAsTextFile()
+        // Based on https://thiscouldbebetter.wordpress.com/2012/12/18/loading-editing-and-saving-a-text-file-in-html5-using-javascrip/
+        {
+        var textToSave =
+          'PostMe'     + '\n' +
+          'TITLE: '    + document.getElementById('title').value + '\n' + 
+          'LOCATION: ' + document.getElementById('location').value + '\n' + 
+          'DATE: '     + today + '\n' +  // today's date - TODO: fix bug allowing going over 60 seconds, i.e. 61 seconds
+          'LEVEL: '    + document.getElementById('level').value + '\n' + 
+          'TAGS: '     + document.getElementById('tags').value + '\n' + 
+          'NOTE: '     + document.getElementById('content').value 
+
+        var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+        var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+        var fileNameToSaveAs = 'post_' + document.getElementById("filename").value;
+
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = "Download File";
+        downloadLink.href = textToSaveAsURL;
+        downloadLink.onclick = destroyClickedElement;
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+
+        downloadLink.click();
+        resetForm();
+    }
+
+    function getDay(dayNo){
+
+        switch(dayNo) {
+        case 1:
+            return "Mon";
+            break; 
+        case 2:
+            return "Tue";
+            break;  
+        case 3:
+            return "Wed";
+            break;  
+        case 4:
+            return "Thu";
+            break;  
+        case 5:
+            return "Fri";
+            break;  
+        case 6:
+            return "Sat";
+            break;  
+        case 7:
+            return "Sun";
+            break;
+        default:
+            return "?";
+            break;
+        }
+    }
+
+    function resetForm(){
+        $('postMe').find('title').value('');
+        $('postMe').find('location').value('');
+        $('postMe').find('level').value('');
+        $('postMe').find('tags').value('');
+        $('postMe').find('content').value('');
+        $('postMe').find('filename').value('');
+    }
+
+    function destroyClickedElement(event) {
+        document.body.removeChild(event.target);
+    }
+  </script>
+</head>
+
+<body>
+  <div id="page">
+    
+    <h1>PostMe</h1>
+  
+    <form id="postme">
+        <label for="title">
+        <i>Title</i> <!-- =title - input example -->
+        <input id="title" size="40" placeholder=".">
+        </label>
+        
+        <br>
+        
+        <label for="location">
+        <i>Location</i> <!-- =location - input example -->
+        <input id="location" size="50" placeholder=".">
+        </label>
+        
+        <input type="hidden" id="date" size="40"> <!-- =date - hidden input example (automatically populated with current date in yyyy-mm-dd format) -->
+        
+        <br>
+        
+        <label for="level"> 
+        <i>Level</i> 
+        <select name="level" id="level" size="1">
+            <option value="Info">INFO</option>
+            <option value="Warn">WARN</option>
+            <option value="Error">ERROR</option>
+        </select>
+        </label>
+        
+        <br>
+        
+        <label for="tags">
+        <i>Tags</i>  <!-- =tags textarea example -->
+        <textarea id="tags" cols="80" rows="3" placeholder="."></textarea>
+        </label>
+        
+        <br>
+        
+        <label for="content">
+        <i>Content</i>  <!-- =content textarea example -->
+        <textarea id="content" cols="80" rows="10" placeholder="."></textarea>
+        </label>
+
+        <br>
+        
+        <label for="filename">
+        <i>Filename</i>
+        <input id="filename" value="" size="40" placeholder=".">
+        </label>
+
+        <br>
+        
+        <button onclick="saveFormAsTextFile()">Save to File</button>
+    </form>
+
+  </div>
+</body>
+</html>
